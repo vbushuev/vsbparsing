@@ -1,5 +1,5 @@
 <?php
-namespace cb;
+namespace cb\parse;
 use core\Log;
 class VIN{
     protected $wmis=[];

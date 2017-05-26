@@ -1,5 +1,5 @@
 <?php
-namespace cb;
+namespace adaptor;
 class Pdf extends \FPDF{
     protected $vin="";
     public function setVin($v){
@@ -114,7 +114,7 @@ class Pdf extends \FPDF{
 
     }
     public function FastReport($report){
-        
+
         $this->vin = $report["history"]["vin"];
         $pdf = $this;
         $pdf->AddPage();

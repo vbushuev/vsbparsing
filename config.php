@@ -1,5 +1,10 @@
 <?php
 $cbConfig = [
+    "CSVReader" =>[
+        "path" => "input/",
+        "separator" => ";",
+        "encoding" => "cp1251"
+    ],
     "rucaptcha" => [
         "key" => "ccca532951426427e0afa43b710f683f"
     ],
@@ -21,6 +26,13 @@ $cbConfig = [
         "version" =>"1.0",
         "login" => "admin",
         "reportTable" => "280"
+    ],
+    "db"=>[
+        "host" => "127.0.0.1",
+        "user" => "tutmodno",
+        "pass" => "tutmodno",
+        "schema" => "tutmodno",
+        "prefix" => "061c7_"
     ]
 ];
 ?>
