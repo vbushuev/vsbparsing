@@ -1,2 +1,4 @@
 input/*
+logs/*
 *.csv
+*.log
