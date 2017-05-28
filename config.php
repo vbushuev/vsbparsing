@@ -32,7 +32,16 @@ $cbConfig = [
         "user" => "tutmodno",
         "pass" => "tutmodno",
         "schema" => "tutmodno",
-        "prefix" => "061c7_"
+        "prefix" => "o61c7_"
+    ],
+    "ksenmart" => [
+        "price"=>[
+            "adds"=>"10",
+            "type"=>"percent" //absolute,percent
+        ],
+        "images"=>[
+            "path"=>"img"
+        ]
     ]
 ];
 ?>

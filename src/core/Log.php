@@ -4,7 +4,25 @@ class Log{
     protected static $LogDir = "logs";
     protected static $LogName = "g";
     public static $console = false;
+    public static function error(){
+        $out = "ERROR\t".self::get_caller_info();
+        foreach(func_get_args() as $s){
+            if(is_array($s)||is_object($s)) $s = json_encode($s,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+            $out.="\t".$s."\n";
+        }
+        $out.="\n";
+        self::_putdata($out);
+    }
     public static function debug(){
+        $out = "DEBUG\t".self::get_caller_info();
+        foreach(func_get_args() as $s){
+            if(is_array($s)||is_object($s)) $s = json_encode($s,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+            $out.="\t".$s."\n";
+        }
+        $out.="\n";
+        self::_putdata($out);
+    }
+    protected static function printOutput(){
         $out = "DEBUG\t".self::get_caller_info();
         foreach(func_get_args() as $s){
             if(is_array($s)||is_object($s)) $s = json_encode($s,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);

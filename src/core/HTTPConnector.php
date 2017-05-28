@@ -98,6 +98,56 @@ class HTTPConnector extends Common{
         curl_multi_close($mh);
         return $response;
     }
+    public function multiFetch($urls,callable $f){
+        //if(!is_array($urls))$urls = [$urls];
+        $response=[];
+        $curls = [];
+        $mh = curl_multi_init();
+        foreach($urls as $url=>$arg){
+            $curls[$url] = curl_init();
+            //$host = parse_url($url);
+            $curlOptions = [
+                CURLOPT_URL => $url,
+                CURLOPT_HTTPHEADER=>$this->headers,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => 1,
+                CURLOPT_MAXREDIRS =>20, // останавливаться после 10-ого редиректа
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_ENCODING => ""
+            ];
+            if($this->config["proxy"]!==false)$curlOptions[CURLOPT_PROXY] = $this->config["proxy"];
+            if($arg["method"] == 'POST'){
+                $data = $this->config["json"]?json_encode($arg["data"]):http_build_query($arg["data"]);
+                $curlOptions[CURLOPT_POST]=1;
+                $curlOptions[CURLOPT_POSTFIELDS]=$data;
+            }else {
+                if(count($arg["data"])){
+                    $curlOptions[CURLOPT_URL].=(preg_match("/\?/",$curlOptions[CURLOPT_URL])?"&":"?").http_build_query($arg["data"]);
+                };
+            }
+            curl_setopt_array($curls[$url], $curlOptions);
+            curl_multi_add_handle($mh,$curls[$url]);
+        }
+        do{
+            curl_multi_exec($mh, $running);
+            curl_multi_select($mh);
+        } while ($running > 0);
+        //$this->_properties["http_info"]=curl_multi_info_read($mh);
+        // Obtendo dados de todas as consultas e retirando da fila
+        foreach($curls as $url=>$curl){
+            $calldata = [
+                "url"=>$url,
+                "request"=>$urls[$url],
+                "response" => curl_multi_getcontent($curl),
+                "http_info" => curl_getinfo($curl)
+            ];
+            $f($calldata);
+            //$this->_properties["http_info"][$url] = ;
+            curl_multi_remove_handle($mh, $curl);
+        }
+        curl_multi_close($mh);
+        return $response;
+    }
     public function getHeaders(){
         return $this->headers;
     }

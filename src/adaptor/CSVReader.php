@@ -1,11 +1,13 @@
 <?php
 namespace adaptor;
 use core\Config as Config;
+use core\Common as Common;
 use core\Log as Log;
-class CSVReader{
+class CSVReader extends Common{
     protected $_cfg=[];
     public function __construct(){
         $this->_cfg = Config::CSVReader();
+        $this->publicData["rename"] = true;
     }
     public function get(){
         $res = [];
@@ -43,7 +45,7 @@ class CSVReader{
             }
             fclose($handle);
         }
-        rename($file,$file.".done");
+        if($this->publicData["rename"])rename($file,$file.".done");
         return $res;
     }
 };
