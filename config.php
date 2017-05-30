@@ -40,7 +40,8 @@ $cbConfig = [
             "type"=>"percent" //absolute,percent
         ],
         "images"=>[
-            "path"=>"img"
+            //"path"=>"../tutmodno/media/com_ksenmart/images/product/original/"
+            "path"=>"../tutmodno/media/com_ksenmart/images/products/"
         ]
     ]
 ];

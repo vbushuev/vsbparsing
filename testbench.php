@@ -1,69 +1,10 @@
 <?php
 include("autoload.php");
 use core\Log as Log;
-use core\Config as Config;
-use core\Strings as Strings;
-use adaptor\CSVReader as CSVReader;
-use db\Table as Table;
-class Category extends Table{
-    protected $fillable = ["title","childs_title","alias","content","introcontent","published","hits","parent_id","ordering","metatitle","metadescription","metakeyword"];
-    public function __construct(){
-        parent::__construct('ksenmart_categories');
-    }
-};
-class Product extends Table{
-    protected $fillable = ["parent_id","childs_group","title","alias","price","old_price","purchase_price","price_type","content","introcontent","product_code","in_stock","product_unit","product_packaging","manufacturer","promotion","recommendation","hot","new","published","hits","carted","ordering","metatitle","metadescription","metakeywords","date_added","is_parent","type","tag"];
-    protected $_cfg;
-    public function __construct(){
-        parent::__construct('ksenmart_products','id','date_added');
-        $this->_cfg = Config::ksenmart();
-    }
-    public function __set($n,$v){
-        if(isset($this->publicData[$n])){
-            if($n=="price" && isset($this->_cfg["price"])){
-                $v = $this->priceAdds($v);
-            }
-            $this->publicData[$n] = $v;
-        }
-    }
-    public function priceAdds($p){
-        $v = intval($p);
-        if($this->_cfg["price"]["type"]=="percent"){
-            $v = $v+ $v*$this->_cfg["price"]["adds"]/100;
-        }else $v = $v+$this->_cfg["price"]["adds"];
-        return $v;
-    }
-};
-class ProductImage extends Table{
-    protected $fillable = ["owner_id","media_type","owner_type","folder","filename","mime_type","title","ordering","param"];
-    public function __construct(){
-        parent::__construct('ksenmart_files');
-    }
-};
-class ProductCategory extends Table{
-    protected $fillable = ["product_id","category_id","is_default"];
-    public function __construct(){
-        parent::__construct('ksenmart_products_categories');
-    }
-};
-class Manufacturers extends Table{
-    protected $fillable = ["title","alias","content","introcontent","country","published","ordering","metatitle","metadescription","metakeywords"];
-    public function __construct(){
-        parent::__construct('ksenmart_manufacturers');
-    }
-};
-class PropertyValues extends Table{
-    protected $fillable = ["alias","property_id","title","image","ordering"];
-    public function __construct(){
-        parent::__construct('ksenmart_property_values');
-    }
-};
-class ProductPropertyValues extends Table{
-    protected $fillable = ["product_id","property_id","value_id"];
-    public function __construct(){
-        parent::__construct('ksenmart_product_properties_values');
-    }
-};
+use adaptor\yml\Reader as YMLReader;
+use adaptor\joomla\ksenmart\Category as Category;
+use adaptor\joomla\ksenmart\Product as Product;
+
 $category = new Category;
 $product = new Product;
 $images = new ProductImage;

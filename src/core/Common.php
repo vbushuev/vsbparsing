@@ -14,5 +14,16 @@ class Common{
     public function toJSON($p=JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE){
         return json_encode($this->publicData,$p);
     }
+    public function fromArray($a){
+        foreach($a as $k=>$v) $this->__set($k,$v);
+        return $this;
+    }
+    public function fromJSON($j){
+        $a = json_decode($j,true);
+        return $this->fromArray($a);
+    }
+    public function __toString(){
+        return $this->toJSON();
+    }
 };
 ?>

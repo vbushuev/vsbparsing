@@ -135,12 +135,14 @@ class HTTPConnector extends Common{
         //$this->_properties["http_info"]=curl_multi_info_read($mh);
         // Obtendo dados de todas as consultas e retirando da fila
         foreach($curls as $url=>$curl){
+
             $calldata = [
                 "url"=>$url,
                 "request"=>$urls[$url],
                 "response" => curl_multi_getcontent($curl),
                 "http_info" => curl_getinfo($curl)
             ];
+            Log::debug($calldata);
             $f($calldata);
             //$this->_properties["http_info"][$url] = ;
             curl_multi_remove_handle($mh, $curl);

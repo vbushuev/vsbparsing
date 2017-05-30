@@ -58,7 +58,8 @@ class Table extends Common{
         $this->publicData = $r;
         return $this;
     }
-    public function findOrCreate($a){
+    public function findOrCreate($a=null){
+        $a = is_null($a)?$this->publicData:$a;
         try{
             $this->find($a);
         }
