@@ -13,7 +13,13 @@ class Connector{
         $this->conn=null;
     }
     public function __destruct(){
-        if($this->connected) $this->conn->close();
+        $this->disconnect();
+    }
+    public function disconnect(){
+        if($this->connected){
+             $this->conn->close();
+             $this->connected = false;
+         }
     }
     protected function connect(){
         $this->conn = new \mysqli($this->_cfg["host"],$this->_cfg["user"],$this->_cfg["pass"],$this->_cfg["schema"]);

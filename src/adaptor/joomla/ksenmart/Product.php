@@ -31,7 +31,7 @@ class Product extends Table{
                 "in_stock"=>$prd->quantity,
                 "product_unit"=>"0",
                 "product_packaging"=>"0.0000",
-                "manufacturer"=>$prd->vendor,
+                "manufacturer"=>"17",//$prd->vendor,
                 "promotion"=>"0",
                 "recommendation"=>"0",
                 "hot"=>"0",
@@ -62,7 +62,7 @@ class Product extends Table{
             $productCategory->findOrCreate(["product_id"=>$this->id,"category_id"=>$prd->category_id,"is_default"=>"1"]);
             $this->checkImages($prd);
             $this->checkProperties($prd);
-            echo "Product #".$this->id."\t".$this->title." loaded.\n";
+            Log::debug( "Product #".$this->id."\t".$this->alias."[".$this->title."] loaded.");
         }
     }
     public function __set($n,$v){
@@ -86,11 +86,11 @@ class Product extends Table{
         foreach ($prd->params as $param) {
             if($param["name"]=="Цвет"){
                 $pv->findOrCreate(["alias"=>"_".$param["value"],"property_id"=>5,"title"=>$param["value"],"image"=>"","ordering"=>"0"]);
-                $ppv->findOrCreate(["product_id"=>$this->id,"property_id"=>"5","value_id"=>$pv->id]);
+                $ppv->findOrCreate(["product_id"=>$this->id,"property_id"=>"5","value_id"=>$pv->id,"text"=>"","price"=>""]);
             }
             else if($param["name"]=="Размер"){
                 $pv->findOrCreate(["alias"=>"_".$param["value"],"property_id"=>31,"title"=>$param["value"],"image"=>"","ordering"=>"0"]);
-                $ppv->findOrCreate(["product_id"=>$this->id,"property_id"=>"31","value_id"=>$pv->id]);
+                $ppv->findOrCreate(["product_id"=>$this->id,"property_id"=>"31","value_id"=>$pv->id,"text"=>"","price"=>""]);
             }
         }
         /*
@@ -113,11 +113,11 @@ class Product extends Table{
     }
     public function checkImages(coreProduct $prd){
         $urls=[];
+        $ordering = 1;
         foreach ($prd->images as $img) {
             $pu = parse_url($img);
             $pi = pathinfo($pu["path"]);
-            //echo "check image ".$img." in ".$this->_cfg["images"]["path"].$pi["basename"]."\n";
-            if(!file_exists($this->_cfg["images"]["path"]."w30xh30/".$pi["basename"])){
+            if(!file_exists($this->_cfg["images"]["path"]."w30xh30/middle-middle-color-center-center-1-0-0-".$pi["basename"])){
                 $urls[$img]=["url"=>$img,"method"=>"GET","data"=>[]];
             }
             $image = new ProductImage;
@@ -129,12 +129,15 @@ class Product extends Table{
             }
             catch(\Exception $e){
                 $image->create([
-                    "owner_id"=>$this->id,"media_type"=>"image","owner_type"=>"product",
+                    "owner_id"=>$this->id,
+                    "media_type"=>"image",
+                    "owner_type"=>"product",
                     "folder"=>"products",
                     "filename"=>$pi["basename"],
-                    "mime_type"=>"",
+                    "mime_type"=>"image/jpeg",
                     "title"=>$this->title,
-                    "ordering"=>"0","param"=>""
+                    "ordering"=>$ordering++,
+                    "params"=>""
                 ]);
             }
         }
@@ -144,14 +147,14 @@ class Product extends Table{
             $http->multiFetch($urls,function($calldata)use($tut){
                 $pu = parse_url($calldata["url"]);
                 $pi = pathinfo($pu["path"]);
-                echo "loaded image ".$pi["basename"]."\n";
+                Log::debug( "loaded image ".$pi["basename"]);
                 file_put_contents($tut->_cfg["images"]["path"]."original/".$pi["basename"],$calldata["response"]);
-                imagejpeg($this->resize_image($tut->_cfg["images"]["path"]."original/".$pi["basename"],30,30),$tut->_cfg["images"]["path"]."w30xh30/".$pi["basename"]);
-                imagejpeg($this->resize_image($tut->_cfg["images"]["path"]."original/".$pi["basename"],36,36),$tut->_cfg["images"]["path"]."w36xh36/".$pi["basename"]);
-                imagejpeg($this->resize_image($tut->_cfg["images"]["path"]."original/".$pi["basename"],120,120),$tut->_cfg["images"]["path"]."w120xh120/".$pi["basename"]);
-                imagejpeg($this->resize_image($tut->_cfg["images"]["path"]."original/".$pi["basename"],200,200),$tut->_cfg["images"]["path"]."w200xh200/".$pi["basename"]);
-                imagejpeg($this->resize_image($tut->_cfg["images"]["path"]."original/".$pi["basename"],200,200),$tut->_cfg["images"]["path"]."wxh200/".$pi["basename"]);
-                imagejpeg($this->resize_image($tut->_cfg["images"]["path"]."original/".$pi["basename"],350,350),$tut->_cfg["images"]["path"]."w350xh350/".$pi["basename"]);
+                imagejpeg($this->resize_image($tut->_cfg["images"]["path"]."original/".$pi["basename"],30,30),$tut->_cfg["images"]["path"]."w30xh30/middle-middle-color-center-center-1-0-0-".$pi["basename"]);
+                imagejpeg($this->resize_image($tut->_cfg["images"]["path"]."original/".$pi["basename"],36,36),$tut->_cfg["images"]["path"]."w36xh36/middle-middle-color-center-center-1-0-0-".$pi["basename"]);
+                imagejpeg($this->resize_image($tut->_cfg["images"]["path"]."original/".$pi["basename"],120,120),$tut->_cfg["images"]["path"]."w120xh120/middle-middle-color-center-center-1-0-0-".$pi["basename"]);
+                imagejpeg($this->resize_image($tut->_cfg["images"]["path"]."original/".$pi["basename"],200,200),$tut->_cfg["images"]["path"]."w200xh200/middle-middle-color-center-center-1-0-0-".$pi["basename"]);
+                imagejpeg($this->resize_image($tut->_cfg["images"]["path"]."original/".$pi["basename"],200,200),$tut->_cfg["images"]["path"]."wxh200/middle-middle-color-center-center-1-0-0-".$pi["basename"]);
+                imagejpeg($this->resize_image($tut->_cfg["images"]["path"]."original/".$pi["basename"],350,350),$tut->_cfg["images"]["path"]."w350xh350/middle-middle-color-center-center-1-0-0-".$pi["basename"]);
             });
         }
         // [images] => Array

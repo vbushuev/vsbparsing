@@ -36,6 +36,7 @@ class Strings{
             "/я/u" =>"ya",
             "/ы/u" =>"y",
             "/\s/u" =>"_",
+            "/[\%;:\?\!\)\(\[\]\^\&<>\/]/u" =>"",
         ];
         return preg_replace(array_keys($reps), array_values($reps), mb_strtolower($s));
     }

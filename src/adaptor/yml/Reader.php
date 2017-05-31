@@ -21,16 +21,15 @@ class Reader{
         //создаем массив категорий
         $c = [];
         foreach ($this->syml->shop->categories->category as $value) {
-        	if ($value['parentId']) {
-        		$parent = strval($value['parentId']);
-        	}else{
-        		$parent = '0';
-        	}
-            $cat = new Category;
-        	$c[strval($value['id'])] = $cat->fromArray(['external_id' => strval($value['id']),'title' => strval($value['0']), 'parent_id' => $parent]);
+            $parent = ($value['parentId'])?strval($value['parentId']):'0';
+            $id = strval($value['id']);
+            $tit = strval($value['0']);
+        	$cat = new Category;
+
+        	$c[$id] = $cat->fromArray(['external_id' => $id,'title' => $tit, 'parent_id' => $parent]);
         }
         //Сортируем массив, чтоб сначала шли основные категории (без родителя)
-        usort($c, function($a, $b){return ($a->parent_id - $b->parent_id);});
+        //usort($c, function($a, $b){return ($a->parent_id - $b->parent_id);});
         return $c;
     }
     public function getProducts($cur=false){

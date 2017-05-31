@@ -11,7 +11,7 @@ class Category extends Table{
         parent::__construct('ksenmart_categories');
         if(!is_null($ctg)){
             $parent_id="0";
-            try{$parent=$this->find(['external_id'=>$ctg->parent_id]);$parent_id=$this->id;}
+            try{$parent=$this->find(['external_id'=>"like '%{$ctg->parent_id}%'"]);$parent_id=$this->id;}
             catch(\Exception $e){}
             $this->publicData=[
                 "title"=>$ctg->title,
@@ -30,7 +30,7 @@ class Category extends Table{
             ];
             $found = false;
             try{
-                $this->find(['external_id'=>$ctg->external_id]);
+                $this->find(['external_id'=>"like '%{$ctg->external_id}%'"]);
                 $found = true;
             }
             catch(\Exception $e){

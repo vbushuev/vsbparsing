@@ -28,6 +28,7 @@ class Table extends Common{
             if($this->updated_at!==false)$removeFields[]=$this->updated_at;
             $this->fillable=array_diff($this->fillable,$removeFields);
         }
+        $this->conn->disconnect();
     }
     public function find($a=[]){
         $sql = "select * from ".$this->table." where ";
@@ -45,9 +46,10 @@ class Table extends Common{
         $r=[];
         try{$r = $this->conn->select($sql);}
         catch(\Exception $e){
-            Log::error($e);
+            //Log::error($e);
             throw $e;
         }
+        $this->conn->disconnect();
         if(!count($r))throw new Exception("not found");
         foreach ($r as $key => $value) {
             if($key==$this->primary){
@@ -79,6 +81,7 @@ class Table extends Common{
         $sql.=join(", ",$params);
         $sql.=" where ".$this->primary." = ".$this->idx;
         $r = $this->conn->update($sql);
+        $this->conn->disconnect();
         return $this;
     }
     public function create($ins=[]){
@@ -89,6 +92,7 @@ class Table extends Common{
         if($this->created_at!==false)$a[$this->created_at] = date("Y-m-d H:i:s");
         $sql = "insert into {$this->table}(".join(",",array_keys($a)).") values ('".join("','",array_values($a))."');";
         $r = $this->conn->insert($sql);
+        $this->conn->disconnect();
         if($r!==true){
             $this->idx = $r;
             $a[$this->primary]=$this->idx;
@@ -105,6 +109,7 @@ class Table extends Common{
             Log::error($e);
             throw $e;
         }
+        $this->conn->disconnect();
         if(!count($r))throw new Exception("not found");
         return intval($r["quantity"]);
     }
@@ -114,6 +119,7 @@ class Table extends Common{
             Log::error($e);
             throw $e;
         }
+        $this->conn->disconnect();
         if(!count($r))throw new Exception("not found");
         return $r["result"];
     }
