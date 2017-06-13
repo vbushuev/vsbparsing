@@ -49,7 +49,7 @@ class Product extends Table{
             ];
             $found = false;
             try{
-                $this->find(['product_code'=>$ctg->sku]);
+                $this->find(['product_code'=>$prd->sku]);
                 $found = true;
             }
             catch(\Exception $e){

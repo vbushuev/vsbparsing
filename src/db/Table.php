@@ -13,17 +13,19 @@ class Table extends Common{
     protected $conn=null;
     protected $data=false;
     protected $fillable=[];
-    public function __construct($t,$idxField="id",$created_at=false,$updated_at=false){
+    //public function __construct($t,$idxField="id",$created_at=false,$updated_at=false){
+    public function __construct($t,$idxField=false,$created_at=false,$updated_at=false){
         $this->table=$t;
         $this->primary=$idxField;
         $this->created_at=$created_at;
         $this->updated_at=$updated_at;
         $this->conn = new dbConnector();
-        if(!count($fillable)){
+        if(!count($this->fillable)){
             $sql = "select * from ".$this->table." where 1 limit 1";
             $r = $this->conn->select($sql);
             if(count($r))$this->fillable = array_keys($r);
-            $removeFields = [$this->primary];
+            $removeFields=[];
+            if($this->primary!==false)$removeFields[]= $this->primary;
             if($this->created_at!==false)$removeFields[]=$this->created_at;
             if($this->updated_at!==false)$removeFields[]=$this->updated_at;
             $this->fillable=array_diff($this->fillable,$removeFields);
@@ -36,14 +38,15 @@ class Table extends Common{
         if(is_array($a))foreach($a as $f=>$v){
             if(in_array($f,$this->fillable) || $f==$this->primary) {
                 $val = $v;
-                if(!preg_match("/^\s*[\!=><]|(like)/",$v))$val = "= ".$v;
+                if(!preg_match("/^\s*[\!=><]|(like)/",$v))$val = " = '".$v."'";
                 $params[] = "{$f} {$val}";
             }
         }
         else $params[]=$this->primary." = ".$a;
-        $sql.=join("and ",$params);
+        $sql.=join(" and ",$params);
         $sql.=" limit 1";
         $r=[];
+        //Log::debug("find",$sql);
         try{$r = $this->conn->select($sql);}
         catch(\Exception $e){
             //Log::error($e);
@@ -86,10 +89,11 @@ class Table extends Common{
     }
     public function create($ins=[]){
         if(!count($ins))return $this;
-        if(isset($ins[$this->primary]))unset($ins[$this->primary]);
+        if($this->primary!==false && isset($ins[$this->primary]))unset($ins[$this->primary]);
         $a = array_intersect_key($ins,array_flip($this->fillable));
         //print_r($a);exit;
         if($this->created_at!==false)$a[$this->created_at] = date("Y-m-d H:i:s");
+        if($this->updated_at!==false)$a[$this->updated_at] = date("Y-m-d H:i:s");
         $sql = "insert into {$this->table}(".join(",",array_keys($a)).") values ('".join("','",array_values($a))."');";
         $r = $this->conn->insert($sql);
         $this->conn->disconnect();

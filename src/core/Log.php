@@ -13,6 +13,18 @@ class Log{
         $out.="\n";
         self::_putdata($out);
     }
+    public static function console(){
+        $out = "DEBUG\t".self::get_caller_info();
+        foreach(func_get_args() as $s){
+            if(is_array($s)||is_object($s)) $s = json_encode($s,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+            $out.="\t".$s."\n";
+        }
+        $out.="\n";
+        $old_conole = self::$console;
+        self::$console = true;
+        self::_putdata($out);
+        self::$console = $old_conole;
+    }
     public static function debug(){
         $out = "DEBUG\t".self::get_caller_info();
         foreach(func_get_args() as $s){

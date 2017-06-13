@@ -2,3 +2,5 @@ input/*
 logs/*
 *.csv
 *.log
+
+cookie-jar

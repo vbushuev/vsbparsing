@@ -53,7 +53,7 @@ class HTTPConnector extends Common{
         $info = curl_getinfo($this->curl);
 
         $rheads = $this->headers;
-        Log::debug("HTTP/{$m} {$url}","Headers",$rheads,"Data",$d,"Response",$s);
+        //Log::debug("HTTP/{$m} {$url}","Headers",$rheads,"Data",$d,"Response",$s);
         $this->responseHeaders(substr($s,0,$info["header_size"]));
         $response = substr($s,$info["header_size"]);
 
@@ -132,10 +132,9 @@ class HTTPConnector extends Common{
             curl_multi_exec($mh, $running);
             curl_multi_select($mh);
         } while ($running > 0);
-        //$this->_properties["http_info"]=curl_multi_info_read($mh);
+        Log::debug("curl_multi_info: ",curl_multi_info_read($mh));
         // Obtendo dados de todas as consultas e retirando da fila
         foreach($curls as $url=>$curl){
-
             $calldata = [
                 "url"=>$url,
                 "request"=>$urls[$url],
@@ -150,6 +149,9 @@ class HTTPConnector extends Common{
         curl_multi_close($mh);
         return $response;
     }
+    public function setHeaders($h=[]){
+        $this->headers = $h;
+    }
     public function getHeaders(){
         return $this->headers;
     }
@@ -162,6 +164,15 @@ class HTTPConnector extends Common{
     }
     public function close(){
         curl_close($this->curl);
+    }
+    public static function parseQuery($s){
+        $resp = [];
+        if(preg_match_all("/([^=]+)=([^\&]+)&?/uim",$s,$m)){
+            for($i=0;$i<count($m[0]);++$i){
+                $resp[$m[1][$i]] = urldecode($m[2][$i]);
+            }
+        }
+        return $resp;
     }
 };
 ?>

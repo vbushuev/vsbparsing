@@ -30,7 +30,8 @@ class Category extends Table{
             ];
             $found = false;
             try{
-                $this->find(['external_id'=>"like '%{$ctg->external_id}%'"]);
+                // $this->find(['external_id'=>"like '%{$ctg->external_id}%'"]);
+                $this->find(['external_id'=>"regexp '%#{$ctg->external_id}%'"]);
                 $found = true;
             }
             catch(\Exception $e){

@@ -29,10 +29,10 @@ $cbConfig = [
     ],
     "db"=>[
         "host" => "127.0.0.1",
-        "user" => "tutmodno",
-        "pass" => "tutmodno",
-        "schema" => "tutmodno",
-        "prefix" => "o61c7_"
+        "user" => "dixipay",
+        "pass" => "dixipay",
+        "schema" => "dixipay",
+        "prefix" => "dp_"
     ],
     "ksenmart" => [
         "price"=>[
@@ -42,6 +42,20 @@ $cbConfig = [
         "images"=>[
             //"path"=>"../tutmodno/media/com_ksenmart/images/product/original/"
             "path"=>"../tutmodno/media/com_ksenmart/images/products/"
+        ]
+    ],
+    "woocommerce" => [
+        "price"=>[
+            "rate"=>55,
+            "adds"=>"20",
+            "type"=>"percent" //absolute,percent
+        ],
+        "site"=>[
+            "url"=>"http://dixipay.bs2"
+        ],
+        "images"=>[
+            //"path"=>"../tutmodno/media/com_ksenmart/images/product/original/"
+            "path"=>"../dixipay/wp-content/uploads"
         ]
     ]
 ];

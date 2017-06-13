@@ -1,5 +1,5 @@
 <?php
-namespace cb;
+namespace adaptor;
 use core\Log as Log;
 use core\HTTPConnector as Http;
 class AntiCaptcha{

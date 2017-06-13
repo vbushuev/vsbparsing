@@ -13,6 +13,7 @@ try{
         file_put_contents('input/standart_yml_catalog.xml.'.date('Y-m-d'),$yml);
     }else $yml = file_get_contents('input/standart_yml_catalog.xml.'.date('Y-m-d'));
     //$yml = file_get_contents('input/standart_yml_catalog.xml');
+    //$yml = file_get_contents('https://tytmodno.com/standart_yml_catalog.xml');
     Log::debug("yml getted: ".strlen($yml));
     $reader = new YMLReader($yml);
     Log::debug("yml readed ");

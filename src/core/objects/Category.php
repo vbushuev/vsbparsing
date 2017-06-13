@@ -8,6 +8,7 @@ class Category extends Common{
         "title" => "",
         "description" =>"",
         "parent_id" => "",
+        "url"=>"",
         "images"=>[]
     ];
 };
