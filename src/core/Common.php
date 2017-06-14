@@ -2,6 +2,9 @@
 namespace core;
 class Common{
     protected $publicData = [];
+    public function __isset($n){
+        return isset($this->publicData[$n]);
+    }
     public function __set($n,$v){
         if(isset($this->publicData[$n])) $this->publicData[$n] = $v;
     }

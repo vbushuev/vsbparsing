@@ -36,7 +36,7 @@ class Table extends Common{
         $sql = "select * from ".$this->table." where ";
         $params = [];
         if(is_array($a))foreach($a as $f=>$v){
-            if(in_array($f,$this->fillable) || $f==$this->primary) {
+            if(in_array($f,$this->fillable) || $f==$this->primary || $f== $this->updated_at || $f== $this->created_at ) {
                 $val = $v;
                 if(!preg_match("/^\s*[\!=><]|(like)/",$v))$val = " = '".$v."'";
                 $params[] = "{$f} {$val}";
@@ -94,7 +94,7 @@ class Table extends Common{
         //print_r($a);exit;
         if($this->created_at!==false)$a[$this->created_at] = date("Y-m-d H:i:s");
         if($this->updated_at!==false)$a[$this->updated_at] = date("Y-m-d H:i:s");
-        $sql = "insert into {$this->table}(".join(",",array_keys($a)).") values ('".join("','",array_values($a))."');";
+        $sql = "insert into {$this->table}(`".join("`,`",array_keys($a))."`) values ('".join("','",array_values($a))."');";
         $r = $this->conn->insert($sql);
         $this->conn->disconnect();
         if($r!==true){

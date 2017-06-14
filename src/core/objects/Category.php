@@ -7,9 +7,10 @@ class Category extends Common{
         "external_id"=>"",
         "title" => "",
         "description" =>"",
-        "parent_id" => "",
+        "parent_id" => null,
         "url"=>"",
-        "images"=>[]
+        "images"=>[],
+        "brands"=>null
     ];
 };
 ?>

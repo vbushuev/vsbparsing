@@ -2,6 +2,9 @@
 namespace carbazar;
 use core\Log as Log;
 class Auth {
+    protected $session= null;
+    protected $client = null;
+    protected $apikey = null;
     protected $resp=[
         "code"=>200,
         "status"=>"success",
@@ -9,18 +12,35 @@ class Auth {
         "request"=>[],
         "response"=>[]
     ];
+    public function getClient(){return $this->client;}
+    public function getSession(){return $this->session;}
+    public function getApikey(){return $this->apikey;}
     public function __construct($a=null){
         if(!is_null($a) && is_array($a)){
             if(isset($a["session"])){
                 try{
-                    $session = new Session($a);
-                    $apikey = new Apikey;
-                    $apikey->find(["id"=>$session->apikey_id]);
-                    $client = new Client;
-                    $client->find(["id"=>$apikey->client_id]);
+                    $this->session = new Session($a);
+                    $this->client = new Client;
+                    $this->client->find(["id"=>$this->session->client_id]);
+                    $this->apikey = new Apikey;
+                    Log::debug($this->session->apikey_id,$this->client->account_id);
+                    $this->apikey->find(["id"=>$this->session->apikey_id,"account_id"=>$this->client->account_id]);
+                    if($this->apikey->quantity<=0){
+                        $message = "not enough requests";
+                        Log::debug( $message );
+                        $this->resp = [
+                            "code"=>403,
+                            "status"=>"auth failed",
+                            "message"=>$message,
+                            "request"=>$a,
+                            "response"=>[]
+                        ];
+                    }else{
+                        $this->session->update();
+                    }
                 }
                 catch(\Exception $e){
-                    $message = "unknown session #".$a["session"];
+                    $message = "unknown or expired session #".$a["session"];
                     Log::debug( $message );
                     $this->resp = [
                         "code"=>401,
@@ -32,10 +52,10 @@ class Auth {
                 }
             }
             else{
-                $client = new Client;
+                $this->client = new Client;
                 try{
-                    $client->find(['login'=>$a["login"]]);
-                    if($client->password != md5($a["password"])){
+                    $this->client->find(['login'=>$a["login"]]);
+                    if($this->client->password != md5($a["password"])){
                         $message = "wrong password #".$a["login"];
                         Log::debug( $message );
                         $this->resp = [
@@ -47,12 +67,12 @@ class Auth {
                         ];
                         return;
                     }
-                    $apikey = new Apikey;
+                    $this->apikey = new Apikey;
                     try{
-                        $apikey->find(["apikey"=>$a["apikey"],"client_id"=>$client->id]);
+                        $this->apikey->find(["apikey"=>$a["apikey"],"account_id"=>$this->client->account_id]);
                         try{
-                            $session = new Session(["apikey_id"=>$apikey->id]);
-                            $this->resp["response"]= $session->toArray();
+                            $this->session = new Session(["apikey_id"=>$this->apikey->id,"client_id"=>$this->client->id]);
+                            $this->resp["response"]= $this->session->toArray();
                         }
                         catch(\Exception $e){
                             $message = $e->getMessage();

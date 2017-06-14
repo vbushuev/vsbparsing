@@ -2,7 +2,7 @@
 namespace carbazar;
 use db\Table as Table;
 class Session extends Table{
-    protected $fillable = ["apikey_id","session"];
+    protected $fillable = ["apikey_id","session","client_id"];
     protected $_cfg;
     public function __construct($a = null){
         parent::__construct('sessions','id','created_at','updated_at');
@@ -10,11 +10,12 @@ class Session extends Table{
             if(isset($a["apikey_id"])){
                 $this->create([
                     "apikey_id"=>$a["apikey_id"],
+                    "client_id"=>$a["client_id"],
                     "session"=>self::generate()
                 ]);
             }
             elseif (isset($a["session"])) {
-                $this->find(["session"=>$a["session"]]);
+                $this->find(["session"=>$a["session"],"updated_at"=>" > date_add(now(),INTERVAL -10 MINUTE)"]);
             }
         }
     }

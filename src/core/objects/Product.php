@@ -12,6 +12,8 @@ class Product extends Common{
         "vendor"=>"",
         "description" =>"",
         "category_id" => "",
+        "parent_id"=>"",
+        "related"=>[],
         "images"=>[],
         "price"=>0.0,
         "currency"=>"",

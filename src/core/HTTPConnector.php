@@ -13,7 +13,10 @@ class HTTPConnector extends Common{
         "json"=>false
     ];
     protected $curl = false;
+    protected $responseHTTPCode = 200;
+    public function getResponseCode(){return $this->responseHTTPCode;}
     public function __construct($a=[]){
+        $this->config = array_merge($this->config,Config::http());
         $this->config = array_merge($this->config,$a);
         $this->curl = curl_init();
     }
@@ -36,7 +39,24 @@ class HTTPConnector extends Common{
             //CURLOPT_STDERR => fopen("curl.log",'w+')
         ];
         //$method = $_SERVER['REQUEST_METHOD'];
-        //if($this->config["proxy"]!==false){$curlOptions[CURLOPT_PROXY] = $this->config["proxy"];}
+        if($this->config["proxy"]!==false){
+            if(is_array($this->config["proxy"])){
+                $itr = isset($this->config["proxy_itr"])?$this->config["proxy_itr"]:0;
+                if(count($this->config["proxy"])<=$itr)$itr = 0;
+                $proxy = $this->config["proxy"][$itr]["url"];
+                $curlOptions[CURLOPT_PROXY] = $this->config["proxy"][$itr]["url"];
+                $type = CURLOPT_PROXY_HTTP;
+                switch($this->config["proxy"][$itr]["type"]){
+                    case "socks4":$type = CURLOPT_PROXY_SOCKS4;break;
+                    case "socks5":$type = CURLOPT_PROXY_SOCKS5;break;
+                }
+                $curlOptions[CURLOPT_PROXYTYPE] = $type;
+                ++$itr;
+                $this->config["proxy_itr"]=$itr;
+            }
+            //elseif(is_string($this->config["proxy"]))$proxy = $this->config["proxy"];
+
+        }
 
         if($m == 'POST'){
             $data = $this->config["json"]?json_encode($d):http_build_query($d);
@@ -56,7 +76,7 @@ class HTTPConnector extends Common{
         //Log::debug("HTTP/{$m} {$url}","Headers",$rheads,"Data",$d,"Response",$s);
         $this->responseHeaders(substr($s,0,$info["header_size"]));
         $response = substr($s,$info["header_size"]);
-
+        $this->responseHTTPCode= intval($info["http_code"]);
         return $response;
     }
     public function fetchMulti($urls,$m="GET",$d=""){
