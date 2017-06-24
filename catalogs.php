@@ -28,45 +28,164 @@ $cats = [
 
 		"id"=>"santehnika-online.ru/mebel_dlja_vannoj_komnaty/mebel_dlya_vannoy_ot_60_do_70_sm/",
 		"url"=>"http://santehnika-online.ru/mebel_dlja_vannoj_komnaty/mebel_dlya_vannoy_ot_60_do_70_sm/",
-		"brands"=>[]
+		"brands"=>[
+			"Aqwella",
+        	"Aqwella 5 stars",
+        	"ArtCeram",
+        	"BelBagno",
+        	"Cezares",
+        	"Clarberg",
+        	"Dreja",
+        	"Duravit",
+        	"Edelform",
+        	"Ingenium",
+        	"Jacob Delafon",
+        	"Kerasan",
+        	"Laufen",
+        	"Migliore",
+        	"Roca",
+        	"Акватон"
+		]
     ],
 	[
 		"title"=>"Мебель 80-80см",
 		"id"=>"santehnika-online.ru/mebel_dlja_vannoj_komnaty/mebel_dlya_vannoy_ot_80_do_90_sm/",
 		"url"=>"http://santehnika-online.ru/mebel_dlja_vannoj_komnaty/mebel_dlya_vannoy_ot_80_do_90_sm/",
-		"brands"=>[]
+		"brands"=>[
+			"Aqwella",
+        	"Aqwella 5 stars",
+        	"ArtCeram",
+        	"BelBagno",
+        	"Cezares",
+        	"Clarberg",
+        	"Dreja",
+        	"Duravit",
+        	"Edelform",
+        	"Ingenium",
+        	"Jacob Delafon",
+        	"Kerasan",
+        	"Laufen",
+        	"Migliore",
+        	"Roca",
+        	"Акватон"
+		]
 	],
 	[
 		"title"=>"Мебель от 100см",
 		"id"=>"santehnika-online.ru/mebel_dlja_vannoj_komnaty/mebel_dlya_vannoy_ot_100_sm/",
 		"url"=>"http://santehnika-online.ru/mebel_dlja_vannoj_komnaty/mebel_dlya_vannoy_ot_100_sm/",
-		"brands"=>[]
+		"brands"=>[
+			"Aqwella",
+        	"Aqwella 5 stars",
+        	"ArtCeram",
+        	"BelBagno",
+        	"Cezares",
+        	"Clarberg",
+        	"Dreja",
+        	"Duravit",
+        	"Edelform",
+        	"Ingenium",
+        	"Jacob Delafon",
+        	"Kerasan",
+        	"Laufen",
+        	"Migliore",
+        	"Roca",
+        	"Акватон"
+		]
 
 	],
 	[
 		"title"=>"Тумбы с раковиной",
 		"id"=>"santehnika-online.ru/mebel_dlja_vannoj_komnaty/tumby_pod_rakovinu/",
 		"url"=>"http://santehnika-online.ru/mebel_dlja_vannoj_komnaty/tumby_pod_rakovinu/",
-		"brands"=>[]
+		"brands"=>[
+			"Aqwella",
+        	"Aqwella 5 stars",
+        	"ArtCeram",
+        	"BelBagno",
+        	"Cezares",
+        	"Clarberg",
+        	"Dreja",
+        	"Duravit",
+        	"Edelform",
+        	"Ingenium",
+        	"Jacob Delafon",
+        	"Kerasan",
+        	"Laufen",
+        	"Migliore",
+        	"Roca",
+        	"Акватон"
+		]
 	],
 	[
 		"title"=>"Пеналы",
 		"id"=>"santehnika-online.ru/mebel_dlja_vannoj_komnaty/shkafy_penaly/",
 		"url"=>"http://santehnika-online.ru/mebel_dlja_vannoj_komnaty/shkafy_penaly/",
-		"brands"=>[]
+		"brands"=>[
+			"Aqwella",
+        	"Aqwella 5 stars",
+        	"ArtCeram",
+        	"BelBagno",
+        	"Cezares",
+        	"Clarberg",
+        	"Dreja",
+        	"Duravit",
+        	"Edelform",
+        	"Ingenium",
+        	"Jacob Delafon",
+        	"Kerasan",
+        	"Laufen",
+        	"Migliore",
+        	"Roca",
+        	"Акватон"
+		]
 
 	],
 	[
 		"title"=>"Зеркальные шкафы",
 		"id"=>"santehnika-online.ru/mebel_dlja_vannoj_komnaty/shkafy_zerkalo/",
 		"url"=>"http://santehnika-online.ru/mebel_dlja_vannoj_komnaty/shkafy_zerkalo/",
-		"brands"=>[]
+		"brands"=>[
+			"Aqwella",
+        	"Aqwella 5 stars",
+        	"ArtCeram",
+        	"BelBagno",
+        	"Cezares",
+        	"Clarberg",
+        	"Dreja",
+        	"Duravit",
+        	"Edelform",
+        	"Ingenium",
+        	"Jacob Delafon",
+        	"Kerasan",
+        	"Laufen",
+        	"Migliore",
+        	"Roca",
+        	"Акватон"
+		]
 	],
 	[
 		"title"=>"Тумбы",
 		"id"=>"santehnika-online.ru/mebel_dlja_vannoj_komnaty/napolnye_shkafy_tumby_komody/",
 		"url"=>"http://santehnika-online.ru/mebel_dlja_vannoj_komnaty/napolnye_shkafy_tumby_komody/",
-		"brands"=>[]
+		"brands"=>[
+			"Aqwella",
+        	"Aqwella 5 stars",
+        	"ArtCeram",
+        	"BelBagno",
+        	"Cezares",
+        	"Clarberg",
+        	"Dreja",
+        	"Duravit",
+        	"Edelform",
+        	"Ingenium",
+        	"Jacob Delafon",
+        	"Kerasan",
+        	"Laufen",
+        	"Migliore",
+        	"Roca",
+        	"Акватон"
+		]
 	],
 	[
 		"title"=>"Акриловые ванны",

@@ -14,7 +14,7 @@ class ProductMeta extends Table{
         if(!is_null($a)){
             if(preg_match("/price/im",$a["meta_key"])){
                 $a["meta_value"] = $this->priceAdds($a["meta_value"]);
-                echo "product #{$a["post_id"]} price is: ".$a["meta_value"]."\n";
+                //echo "product #{$a["post_id"]} price is: ".$a["meta_value"]."\n";
             }
             try{
                 $this->find(['post_id'=>$a["post_id"],"meta_key"=>$a["meta_key"]]);

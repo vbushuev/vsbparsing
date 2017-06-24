@@ -16,7 +16,8 @@ class Term extends Table{
                 Log::debug( "Term found #".$this->term_id);
             }
             catch(\Exception $e){
-                $this->create(["name"=>$a["value"],"slug"=>strtolower($a["value"])."-".strtolower($a["name"])]);
+                $slug = Strings::transcript($a["value"]);
+                $this->create(["name"=>$a["value"],"slug"=>$slug]);
                 Log::debug( "Term created #".$this->term_id);
             }
         }

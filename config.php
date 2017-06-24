@@ -27,13 +27,6 @@ $cbConfig = [
         "login" => "admin",
         "reportTable" => "280"
     ],
-    "db_dixipay"=>[
-        "host" => "127.0.0.1",
-        "user" => "dixipay",
-        "pass" => "dixipay",
-        "schema" => "dixipay",
-        "prefix" => "dp_"
-    ],
     "ksenmart" => [
         "price"=>[
             "adds"=>"10",
@@ -55,10 +48,40 @@ $cbConfig = [
         ],
         "images"=>[
             //"path"=>"../tutmodno/media/com_ksenmart/images/product/original/"
-            "path"=>"../dixipay/wp-content/uploads"
+            "path"=>"../dixipay/wp-content/uploads",
+            "cms_path"=>"uploads"
         ]
     ],
-    "http"=>[
+    "db_dx"=>[
+        "host" => "127.0.0.1",
+        "user" => "dixipay",
+        "pass" => "dixipay",
+        "schema" => "dixipay",
+        "prefix" => "dp_"
+    ],
+    "db"=>[
+        "host" => "127.0.0.1",
+        "user" => "opencart",
+        "pass" => "opencart",
+        "schema" => "opencart",
+        "prefix" => "op_"
+    ],
+    "opencart" => [
+        "price"=>[
+            "rate"=>55,
+            "adds"=>"20",
+            "type"=>"percent" //absolute,percent
+        ],
+        "site"=>[
+            "url"=>"http://opencart.bs2"
+        ],
+        "images"=>[
+            //"path"=>"../tutmodno/media/com_ksenmart/images/product/original/"
+            "path"=>"../opencart.bs2/image/data/santechnika/",
+            "cms_path"=>"data/santechnika/"
+        ]
+    ],
+    "http_proxy"=>[
         "proxy"=>[
             ["url"=>"91.205.52.234:8081","type"=>"http"],
             ["url"=>"188.32.204.96:8081","type"=>"http"],
@@ -552,28 +575,6 @@ $cbConfig = [
             ["url"=>"159.203.163.8:80","type"=>"http"],
             ["url"=>"45.55.75.61:3128","type"=>"http"],
 
-        ]
-    ],
-    "db"=>[
-        "host" => "127.0.0.1",
-        "user" => "opencart",
-        "pass" => "opencart",
-        "schema" => "opencart",
-        "prefix" => "op_"
-    ],
-    "opencart" => [
-        "price"=>[
-            "rate"=>55,
-            "adds"=>"20",
-            "type"=>"percent" //absolute,percent
-        ],
-        "site"=>[
-            "url"=>"http://opencart.bs2"
-        ],
-        "images"=>[
-            //"path"=>"../tutmodno/media/com_ksenmart/images/product/original/"
-            "path"=>"../opencart.bs2/image/data/santechnika/",
-            "cms_path"=>"data/santechnika/"
         ]
     ]
 ];

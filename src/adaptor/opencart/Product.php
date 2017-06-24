@@ -74,14 +74,14 @@ class Product extends Table{
     }
     public function checkProperties(coreProduct $prd){
         foreach($prd->params as $group=>$params){
+            $attrgroup = new AttributeGroupDescription(["name"=>$group]);
             foreach ($params as $key => $value) {
-                $attr = new AttributeDescription;
                 try{
-                    $attr->find((["name"=>$key]));
+                    $attr = new AttributeDescription(["name"=>$key,"attribute_group_id"=>$attrgroup->attribute_group_id]);
                     new ProductAttribute(["product_id"=>$this->product_id,"attribute_id"=>$attr->attribute_id,"text"=>$value]);
                 }
                 catch(\Exception $e){
-                    Log::debug("attribute {$key} is NOT REGISTERED.");
+                    Log::debug("attribute {$key} is NOT REGISTERED.".$e->getTraceAsString());
                 }
             }
         }
@@ -99,21 +99,24 @@ class Product extends Table{
             $filename = $tut->product_id."_".$i."_".$pi["basename"];
             $filepath.=$filename;
             $guid = $this->_cfg["images"]["cms_path"];
-            $image = new ProductImage(["image"=>$this->_cfg["images"]["cms_path"].$filename,"product_id"=>$this->product_id]);
-            if(!file_exists($filepath))$urls[$img]=["url"=>$img,"method"=>"GET","data"=>[],"i"=>$i,"id"=>$image->product_id];
+            if(!file_exists($filepath))$urls[$img]=["url"=>$img,"method"=>"GET","data"=>[],"i"=>$i,"id"=>$tut->product_id];
             $i++;
         }
         if(count($urls)){
             $http = new HTTP;
             $http->multiFetch($urls,function($calldata)use($tut){
-                $pu = parse_url($calldata["url"]);
-                $pi = pathinfo($pu["path"]);
-                $filename = $tut->product_id."_".$calldata["request"]["i"]."_".$pi["basename"];
-                $filepath = $this->_cfg["images"]["path"];
-                $filepath.=$filename;
-                file_put_contents($filepath,$calldata["response"]);
-                if($calldata["request"]["i"]==0)$tut->update(["image"=>$tut->_cfg["images"]["cms_path"].$filename]);
-                Log::debug( "loaded image ".$calldata["url"]." to ".$filepath);
+                if(mb_strlen($calldata["response"])>0){
+                    $pu = parse_url($calldata["url"]);
+                    $pi = pathinfo($pu["path"]);
+                    print_r($calldata);
+                    $filename = $tut->product_id."_".$calldata["request"]["i"]."_".$pi["basename"];
+                    $filepath = $this->_cfg["images"]["path"];
+                    $filepath.=$filename;
+                    file_put_contents($filepath,$calldata["response"]);
+                    $image = new ProductImage(["image"=>$tut->_cfg["images"]["cms_path"].$filename,"product_id"=>$tut->product_id]);
+                    if($calldata["request"]["i"]==0)$tut->update(["image"=>$tut->_cfg["images"]["cms_path"].$filename]);
+                    Log::debug( "loaded image ".$calldata["url"]." to ".$filepath);
+                }
             });
         }
     }

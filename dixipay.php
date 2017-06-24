@@ -2,71 +2,72 @@
 include("autoload.php");
 use core\Log as Log;
 use core\HTTPConnector as Http;
-//Log::$console=true;
+Log::$console=true;
 
 $h = new Http();
-echo $h->fetch("http://dixipay.bs2/wc-api/WC_Gateway_dixipay","POST",["transactionCode"=>"1223","responseCode"=>"A01"]);
+echo $h->fetch("https://buycard.org/ru/wc-api/WC_Gateway_tmgpay","POST",["ticketNumber"=>"480","responseCode"=>"A01"]);
 exit;
 
-$url = "https://lk.dixipay.eu/gates/signature";
 
-$request = [
-    'requestType' =>'sale',
-
+$auth_data = [
     'apiKey'=>'135a376b-41ae-4351-b2ad-076ac808e65b',
     'userName'=>'testApi',
-    'password'=>'E845VinLNLTunjNpe2LcUtl7hGfs6H9j',
+    'password'=>'S33cFb2EPPjbDM7Uh5zX0Kbp2S6F5sok',//'E845VinLNLTunjNpe2LcUtl7hGfs6H9j',
     'merchantAccountCode' => '300042',
-    "customerAccountCode"=>'25052505',
-
-    // 'apiKey'=>'b1062dd7-49b8-45aa-8b14-14b11d43d7e2',
-    // 'userName'=>'apiBuycard',
-    // 'password'=>'49Vi723T34GN7i233TzQBlP3K2t2SO0L',
-    // 'merchantAccountCode' => '658000',
-    // "customerAccountCode"=>'658001',
-
-
-        'ticketNumber'=> '15125125',
+    "customerAccountCode"=>'25052505'
+];
+if(isset($argv[1]) && $argv[1] == "export"){
+    $url = "https://lk.dixipay.eu/gates/xurl";
+    $request = array_merge($auth_data,[
+        'requestType' =>'export',
+        'zip'=>'N',
+        'fromRequestDate'=>'20170601',
+        'toRequestDate'=>'20170623'
+    ]);
+    $response = $h->fetch($url,"GET",$request);
+    echo "REQUEST:\n{$url}\n".http_build_query($request)."\n\n";
+    echo "RESPONSE:\n{$response}\n";
+    file_put_contents("export.csv",$response);
+}
+else{
+    $url = "https://lk.dixipay.eu/gates/signature";
+    $request = array_merge($auth_data,[
+        'requestType' =>'sale-auth',
+        'ticketNumber'=> '151251234',
         'transactionIndustryType'=>'EC',
-
-
-        'amount'=>$amount,
+        'amount'=>"5300",
         'transactionIndustryType'=>'EC',
-        'transactionCode'=>'000000002353',
-
-
+        //'transactionCode'=>'000000002353',
         "accountType"=>"R",
         "currency"=>'USD',
         "lang"=>'RU',
+        "memo"=>"xyz",
+    	"itemCount"=>"2",
+    	"items"=>"(code=167;itemNumber=167;description=Товар;quantity=1;price=54995;unitCostAmount=54995;totalAmount=54995)",
+    	"holderType"=>"P",
+    	"holderName"=>"MAX+PAX",
+    	"holderBirthdate"=>"19690525",
+    	"street"=>"ул. Ленина 102",
+    	"city"=>"Москва",
+    	"zipCode"=>"30301",
+    	"phone"=>"7925856324",
+    	"email"=>"mail@mail.ru"
+    ]);
+    $response = $h->fetch($url,"GET",$request);
+    echo "REQUEST:\n{$url}\n".http_build_query($request)."\n\n";
+    $resp= Http::parseQuery($response);
+    $action = $resp["action"];
+    if(isset($resp["action"])){
+        echo "\nhttps://lk.dixipay.eu/gates/paypage?action=".urlencode($action)."\n";
+    }
+    else echo "RESPONSE:\n{$response}\n";
 
 
 
+}
 
-    "memo"=>"xyz",
-	"itemCount"=>"2",
-	"items"=>"(code=167;itemNumber=167;description=Товар;quantity=1;price=54995;unitCostAmount=54995;totalAmount=54995)",
-	"holderType"=>"P",
-	"holderName"=>"MAX+PAX",
-	"holderBirthdate"=>"19690525",
-	"street"=>"ул. Ленина 102",
-	"city"=>"Москва",
-	"zipCode"=>"30301",
-	"phone"=>"7925856324",
-	"email"=>"mail@mail.ru"
-    //
-    //
-    // 'accountType'=>'R',
-    // 'accountNumber'=>'4111111111111111',
-    // 'accountAccessory'=>'1020',
-    // 'cvv2'=>'123',
-    // 'holderName'=>'Ali Baba',
-    // 'token'=>'VC84632147254611111111'
-];
-$response = $h->fetch($url,"GET",$request);
-echo "REQUEST:\nhttps://portal.tmgpay.eu/gates/signature\n".http_build_query($request)."\n\n";
-echo "RESPONSE:\n{$response}\n";
-$resp= Http::parseQuery($response);
-$action = $resp["action"];
+
+
 
 
 // $request["action"] = $resp["action"];

@@ -14,13 +14,17 @@ class HTTPConnector extends Common{
     ];
     protected $curl = false;
     protected $responseHTTPCode = 200;
+    protected $closed = true;
     public function getResponseCode(){return $this->responseHTTPCode;}
     public function __construct($a=[]){
-        $this->config = array_merge($this->config,Config::http());
-        $this->config = array_merge($this->config,$a);
+        $localConf = Config::http();
+        if(is_array($localConf))$this->config = array_merge($this->config,$localConf);
+        if(is_array($a))$this->config = array_merge($this->config,$a);
         $this->curl = curl_init();
+        $this->closed = false;
     }
     public function fetch($url,$m="GET",$d=[]){
+        if($this->closed)$this->curl = curl_init();
         $host = parse_url($url);
         $curlOptions = [
             CURLOPT_URL => $url,
@@ -45,12 +49,12 @@ class HTTPConnector extends Common{
                 if(count($this->config["proxy"])<=$itr)$itr = 0;
                 $proxy = $this->config["proxy"][$itr]["url"];
                 $curlOptions[CURLOPT_PROXY] = $this->config["proxy"][$itr]["url"];
-                $type = CURLOPT_PROXY_HTTP;
+                // $type = CURLOPT_PROXY_HTTP;
                 switch($this->config["proxy"][$itr]["type"]){
-                    case "socks4":$type = CURLOPT_PROXY_SOCKS4;break;
-                    case "socks5":$type = CURLOPT_PROXY_SOCKS5;break;
+                    case "socks4":$curlOptions[CURLOPT_PROXYTYPE] = CURLOPT_PROXY_SOCKS4;break;
+                    case "socks5":$curlOptions[CURLOPT_PROXYTYPE] = CURLOPT_PROXY_SOCKS5;break;
                 }
-                $curlOptions[CURLOPT_PROXYTYPE] = $type;
+                //$curlOptions[CURLOPT_PROXYTYPE] = $type;
                 ++$itr;
                 $this->config["proxy_itr"]=$itr;
             }
@@ -135,7 +139,24 @@ class HTTPConnector extends Common{
                 CURLOPT_SSL_VERIFYPEER => false,
                 CURLOPT_ENCODING => ""
             ];
-            if($this->config["proxy"]!==false)$curlOptions[CURLOPT_PROXY] = $this->config["proxy"];
+            if($this->config["proxy"]!==false){
+                if(is_array($this->config["proxy"])){
+                    $itr = isset($this->config["proxy_itr"])?$this->config["proxy_itr"]:0;
+                    if(count($this->config["proxy"])<=$itr)$itr = 0;
+                    $proxy = $this->config["proxy"][$itr]["url"];
+                    $curlOptions[CURLOPT_PROXY] = $this->config["proxy"][$itr]["url"];
+                    // $type = CURLOPT_PROXY_HTTP;
+                    switch($this->config["proxy"][$itr]["type"]){
+                        case "socks4":$curlOptions[CURLOPT_PROXYTYPE] = CURLOPT_PROXY_SOCKS4;break;
+                        case "socks5":$curlOptions[CURLOPT_PROXYTYPE] = CURLOPT_PROXY_SOCKS5;break;
+                    }
+                    //$curlOptions[CURLOPT_PROXYTYPE] = $type;
+                    ++$itr;
+                    $this->config["proxy_itr"]=$itr;
+                }
+                //elseif(is_string($this->config["proxy"]))$proxy = $this->config["proxy"];
+
+            }
             if($arg["method"] == 'POST'){
                 $data = $this->config["json"]?json_encode($arg["data"]):http_build_query($arg["data"]);
                 $curlOptions[CURLOPT_POST]=1;
@@ -184,6 +205,7 @@ class HTTPConnector extends Common{
     }
     public function close(){
         curl_close($this->curl);
+        $this->closed = true;
     }
     public static function parseQuery($s){
         $resp = [];

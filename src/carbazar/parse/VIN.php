@@ -9,6 +9,12 @@ class VIN{
     public function __construct(){
         $this->loadCodes();
     }
+    public static function stripNonLatin($v){
+        $pattern     = ['/а/im','/в/im','/е/im','/к/im','/м/im','/н/im','/о/im','/р/im','/с/im','/т/im','/у/im','/х/im'];
+        $replacement = ['a','b','e','k','m','h','o','p','c','t','y','x'];
+        $v = preg_replace($pattern,$replacement,$v);
+        return strtoupper($v);
+    }
     protected static function transliterate($c){
         $s = '0123456789.ABCDEFGH..JKLMN.P.R..STUVWXYZ';
         return strpos($s,$c) % 10;
@@ -21,7 +27,9 @@ class VIN{
         return $map[$sum % 11];
     }
     public static function validate($vin){
+        //$vin = self::stripNonLatin($vin);
         if (strlen($vin) !== 17) return false;
+        return true;
         return self::get_check_digit($vin) === $vin[8];
     }
     public function get($vin){

@@ -1,5 +1,6 @@
 <?php
 date_default_timezone_set('Europe/Moscow');
+set_time_limit(600);
 //define(REQUEST_PARAMETER_NAME,"_xg_u");
 //define(HTACCESS_REPLACEMENT,"#g_");
 function __autoload($className){

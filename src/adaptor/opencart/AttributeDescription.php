@@ -9,9 +9,11 @@ class AttributeDescription extends Table{
         if($a!=null && is_array($a)){
             try{
                 $this->find(['name'=>$a["name"]]);
+                $attr = new Attribute(["attribute_group_id"=>$a["attribute_group_id"]]);
             }
             catch(\Exception $e){
-
+                $attr = new Attribute(["attribute_group_id"=>$a["attribute_group_id"]]);
+                $this->create(["attribute_id"=>$attr->attribute_id,"language_id"=>"1","name"=>$a["name"]]);
             }
         }
     }

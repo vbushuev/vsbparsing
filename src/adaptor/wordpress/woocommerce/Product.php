@@ -49,8 +49,12 @@ class Product extends Table{
             $new_data["ID"] = $this->publicData["ID"];
             $this->fromArray($new_data);
             $this->save();
-            // $productCategory = new ProductCategory;
-            // $productCategory->findOrCreate(["product_id"=>$this->id,"category_id"=>$prd->category_id,"is_default"=>"1"]);
+            $productCategory = new ProductCategory([
+                "id"=>$this->ID,
+                "taxonomy"=>"product_cat",
+                "name"=>"category",
+                "value"=>$prd->category_id
+            ]);
             $this->checkImages($prd);
             $this->checkProperties($prd);
             new TermRelationship([
@@ -98,6 +102,15 @@ class Product extends Table{
         $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_thumbnail_id","meta_value"=>$this->imageIds[0]]);
         $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_product_attributes","meta_value"=>'a:1:{s:7:"pa_size";a:6:{s:4:"name";s:7:"pa_size";s:5:"value";s:0:"";s:8:"position";i:0;s:10:"is_visible";i:1;s:12:"is_variation";i:1;s:11:"is_taxonomy";i:1;}}']);
         $order = 0;
+        //delete old variation
+        $vars1 = new Table('posts');
+        print_r(['post_parent'=>$this->ID,'post_type'=>'product_variation']);
+        $pvs = $vars1->get(['post_parent'=>$this->ID,'post_type'=>'product_variation']);
+        $posts_variations = [];
+        foreach($pvs as $pv)$posts_variations[]=$pv->id;
+        $vars2 = new Table('term_relationships');
+        $vars2->delete(["object_id"=>"in (".join($posts_variations,',').")"]);
+        $vars1->delete(['post_parent'=>$this->ID,'post_type'=>'product_variation']);
         foreach($prd->params["size"] as $size){
             new ProductVariation($prd,["size"=>$size,"order"=>$order++,"guid"=>$this->publicData["guid"],"parent_id"=>$this->ID]);
         }

@@ -17,6 +17,9 @@ class Session extends Table{
             elseif (isset($a["session"])) {
                 $this->find(["session"=>$a["session"],"updated_at"=>" > date_add(now(),INTERVAL -10 MINUTE)"]);
             }
+            elseif (isset($a["session_id"])) {
+                $this->find(["id"=>$a["session_id"]]);
+            }
         }
     }
     public static function generate(){

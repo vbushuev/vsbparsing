@@ -6,8 +6,8 @@ use core\Config as Config;
 class Connector{
     protected $connected=false;
     protected $conn=null;
-    public function __construct($a=[]){
-        $this->_cfg = Config::db();
+    public function __construct($a=[],$connection_name="db"){
+        $this->_cfg = Config::$connection_name();
         $this->_cfg=array_merge($this->_cfg,$a);
         $this->connected=false;
         $this->conn=null;
@@ -66,6 +66,9 @@ class Connector{
         return (isset($this->conn->insert_id))?$this->conn->insert_id:true;
     }
     public function update($sql){
+        $this->insert($sql);
+    }
+    public function delete($sql){
         $this->insert($sql);
     }
     public function exists($sql){

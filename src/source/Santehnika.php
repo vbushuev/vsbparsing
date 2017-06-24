@@ -34,18 +34,20 @@ class Santehnika{
             // }
             // $url.="?".join('&',$brands);
             $cat->fromArray(['external_id' => $li["id"],'title' => $li["title"], 'url' => $url,'brands'=>$li["brands"]]);
-            $this->categories[$id] = $cat;
+            $this->categories[$id] = $li;
             $this->internal_categories[$id] = (!is_null($_callback))?$_callback($cat):null;
         }
         return $this->categories;
     }
     public function getProducts(callable $_callback=null){
+        $lastcat = (file_exists("tdlcp".date("YmdH")."json"))?json_decode(file_get_contents("tdlcp".date("YmdH")."json")):null;
         $products = [];
         if($this->categories===false)return $products;
         $http= new Http();
         foreach ($this->categories as $cat_id => $cat) {
-            $url = $cat->url;
-
+            if(!is_null($lastcat) && $cat_id!=$lastcat)continue;
+            $lastcat = $cat;
+            $url = $cat["url"]."?perpage=108";
             $page = $http->fetch($url,"GET",[]);
             $doc = \phpQuery::newDocument($page);
             echo "Getting {$url}\n";
@@ -75,9 +77,10 @@ class Santehnika{
                 }
             }
             \phpQuery::unloadDocuments();
-            //break;
+            $http->close();
+            file_put_contents("tdlcp".date("YmdH")."json",json_encode($cat_it));
         }
-        $http->close();
+
         return $products;
     }
     protected function productsFromPage($prodUrl,$cat_id){
@@ -86,43 +89,67 @@ class Santehnika{
         $productPage = $http->fetch($prodUrl,"GET",[]);
         file_put_contents("ppage.html",$productPage);
         $pdoc = \phpQuery::newDocument($productPage);
+        $pp = pq($pdoc[".cartproduct"]);
         $pictures = [];
-        $pics = $pdoc[".preview ul.prew li a img"];
-        foreach ($pics as $pic) {
-            $pictures[]=$this->url.pq($pic)->attr("src");
-        }
         $related = [];
-        //print_r($composits);exit;
+        $params=[];
+        $description = '<table class="product_description">';
         $i=1;
-        foreach($pdoc[".icon-galka-complgreen.cmplproduct .cmplopis .cmplopislink"] as $composit){
 
-            $plink = trim(pq($composit)->attr("href"));
-            //Log::console("Composite product hrel ".$this->url.$plink);
+        $brand = $pp->find("div.rightcol > div.wrap > div.leftsubcol > ul > li:nth-child(4) > span.property_value")->text();
+        $vendor = $pp->find("div.rightcol > div.wrap > div.leftsubcol > ul > li:nth-child(2) > span.property_value > a")->text();
+        $alowedBrands = (isset($this->categories[$cat_id]) && isset($this->categories[$cat_id]["brands"]) && count($this->categories[$cat_id]["brands"]))?$this->categories[$cat_id]["brands"]:[$vendor];
+        if(!in_array($vendor,$alowedBrands)){
+            Log::console("Wrond brand: ".$vendor);
+            return null;
+        }
+        // $pics = $pdoc[".preview ul.prew li a img"];
+        $pics = $pdoc[".preview ul.prew .product_fill_img.priview_images"];
+        foreach ($pics as $pic) $pictures[]=$this->url.pq($pic)->attr("href");
+
+
+        foreach($pdoc[".icon-galka-complgreen.cmplproduct"] as $composit){
+            $plink = trim(pq($composit)->find(".cmplopislink")->attr("href"));
+            $name = trim(pq($composit)->find(".cmplopislink")->text());
+            $price = trim(pq($composit)->find(".cmplprice")->html());
+            $containsStr = trim(pq($composit)->find(".cmplopis1_detali")->text());
+            $contains=preg_split("/шт\./ui",$containsStr);
+            array_splice($contains, count($contains)-1);
+
+            $description.='<tr><th width="70%">'.$name.'</th><th>'.$price.'</th></tr>';
+            foreach ($contains as $conttext) $description.='<tr><td colspan="2">'.$conttext.'шт.</td></tr>';
+            $description.='<tr><td colspan="2">Инструкция 1 шт.</td></tr>';
             if(!empty($plink)) {
                 $relprd = $this->productsFromPage($this->url.$plink,"");
                 $related[] = $relprd;
             }
-            // print_r($relprd->toArray());
-            // exit;
-        }
-        //"#cmplproduct1817773 > div:nth-child(3) > a:nth-child(1)"
 
-        $pp = pq($pdoc[".cartproduct"]);
+        }
+        $description.='</table>';
+        // foreach($pdoc[".icon-galka-complgreen.cmplproduct .cmplopis .cmplopislink"] as $composit){
+        //     $plink = trim(pq($composit)->attr("href"));
+        //     if(!empty($plink)) {
+        //         $relprd = $this->productsFromPage($this->url.$plink,"");
+        //         $related[] = $relprd;
+        //     }
+        // }
+
+
 
         $category_id = null;
         if(isset($this->internal_categories[$cat_id])){
             $internal_category = $this->internal_categories[$cat_id];
             if(isset($internal_category->category_id))$category_id = $internal_category->category_id;
         }
-        $vendor = $pp->find("div.rightcol > div.wrap > div.leftsubcol > ul > li:nth-child(2) > span.property_value > a")->text();
+
         if(isset($this->categories[$cat_id]) && isset($this->categories[$cat_id]->brands)){
             if(count($this->categories[$cat_id]->brands) && !in_array($vendor,$this->categories[$cat_id]->brands))return null;
         }
         $props = $pdoc[".props_group"];
-        $params=[];
+
         foreach($props as $prop){
             $title = pq($prop)->find(".title")->text();
-            $title = (empty($title))?"Характеристики":$title;
+            $title = (empty($title))?"Основные":$title;
             $params[$title]=[];
             //Log::console("prop title ".$title);
             foreach(pq($prop)->find("ul li:not(.hide)") as $param) {
@@ -138,10 +165,10 @@ class Santehnika{
             "title" => $pp->find(".zagl h1")->text(),
             "external_id"=>$pp->find("#root-id")->val(),
             "url"=>$prodUrl,
-            "brand"=>$pp->find("div.rightcol > div.wrap > div.leftsubcol > ul > li:nth-child(4) > span.property_value")->text(),
+            "brand"=>$brand,
             "sku"=>$pp->find("div.rightcol > div.wrap > div.leftsubcol > ul > li:nth-child(1) > span.property_value > noindex")->text(),
             "vendor"=>$vendor,
-            "description" =>$pp->find(".props_group ")->html(),
+            "description" =>$description,//$pp->find(".props_group ")->html(),
             "category_id" => $category_id,
             "images"=>$pictures,
             "related"=>$related,
@@ -150,6 +177,7 @@ class Santehnika{
             "params"=>$params,
             //"quantity"=>$quantity
         ]);
+        //print_r($prd->toArray());exit;
         $http->close();
         return $prd;
     }

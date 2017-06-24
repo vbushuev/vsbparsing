@@ -1,13 +1,19 @@
 <?php
+
+//set_include_path(get_include_path() . PATH_SEPARATOR . '/home/srv42489/domsans72.ru/pars/santechnika/');
+
+chdir(dirname(__FILE__));
 include("autoload.php");
 use core\Log as Log;
 use core\HTTPConnector as Http;
 use source\Santehnika as Santehnika;
 use adaptor\opencart\Category as Category;
 use adaptor\opencart\Product as Product;
-include("catalogs.php");
+$include = (isset($argv)&&(count($argv)>1)&&file_exists($argv[1]))?$argv[1]:"catalogs.php";
+include $include;
+
 $tick = time();
-Log::$console=true;
+//Log::$console=true;
 $source = new Santehnika();
 $categories = $source->getCategories(
     $cats,
@@ -52,4 +58,5 @@ $products = $source->getProducts(function($prd){
 //foreach ($products as $product) new Product($product);
 echo "\n---- script done in ".(time()-$tick)." ---- \n";
 // iLU3V7s4Snyek2M4
+// DcWpH3P2
 ?>

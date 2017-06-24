@@ -11,15 +11,6 @@ class Manufacturer extends Table{
     public function __construct($a = null){
         parent::__construct('manufacturer',"manufacturer_id");
         if($a!=null){
-            $new_data=[
-                "product_id"=>$prd->id,
-                "language_id"=>"1",
-                "name"=>$prd->title,
-                "description"=>htmlspecialchars($prd->description),
-                "meta_description"=>"",
-                "meta_keywords"=>"",
-                "tag"=>""
-            ];
             try{
                 $this->find(['name'=>$a["name"]]);
             }

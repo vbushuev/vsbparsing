@@ -55,8 +55,9 @@ class Auth {
                 $this->client = new Client;
                 try{
                     $this->client->find(['login'=>$a["login"]]);
-                    if($this->client->password != md5($a["password"])){
-                        $message = "wrong password #".$a["login"];
+                    if($this->checkPassword($a["password"])){
+                        //$message = "wrong password";
+                         $message = "wrong password (".(preg_match($pattern,$hash)?"this is hash":"Not hash").") #".$a["login"]." ".$a["password"]." - ".$hash;
                         Log::debug( $message );
                         $this->resp = [
                             "code"=>401,
@@ -114,6 +115,16 @@ class Auth {
     }
     public function getResp(){
         return $this->resp;
+    }
+    protected function checkPassword($password){
+        //if($this->client->password != md5($a["password"])){
+        $hash = urldecode($password);
+        $pattern = '/^\$2y/';
+        $md5hash = md5($hash);
+        if(!preg_match($pattern,$hash)) $hash= password_hash($password, PASSWORD_BCRYPT);
+        //if($this->client->password != $hash){
+        // if(hash_equals($this->client->password,$hash) || $md5hash = $this->client->password){
+        return false;
     }
 };
 ?>
