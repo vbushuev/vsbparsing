@@ -76,6 +76,7 @@ class Table extends Common{
     }
     public function update($a=[]){
         if($this->idx===false)return $this;
+        $this->publicData = $a;
         $sql = "update {$this->table} set ";
         $params = [];
         if($this->updated_at!==false)$params[] = "{$this->updated_at} = '".date("Y-m-d H:i:s")."'";
@@ -86,6 +87,7 @@ class Table extends Common{
         $sql.=" where ".$this->primary." = ".$this->idx;
         $r = $this->conn->update($sql);
         $this->conn->disconnect();
+
         return $this;
     }
     public function create($ins=[]){
@@ -96,7 +98,7 @@ class Table extends Common{
         if($this->created_at!==false)$a[$this->created_at] = date("Y-m-d H:i:s");
         if($this->updated_at!==false)$a[$this->updated_at] = date("Y-m-d H:i:s");
         $sql = "insert into {$this->table}(`".join("`,`",array_keys($a))."`) values ('".join("','",array_values($a))."');";
-        Log::debug($sql);
+        //Log::debug($sql);
         $r = $this->conn->insert($sql);
         $this->conn->disconnect();
         if($r!==true){

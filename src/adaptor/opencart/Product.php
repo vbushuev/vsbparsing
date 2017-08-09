@@ -27,7 +27,7 @@ class Product extends Table{
                 "isbn"=>"",
                 "mpn"=>"",
                 "location"=>"",
-                "quantity"=>"",
+                "quantity"=>"100",
                 "stock_status_id"=>"7",
                 "image"=>"",
                 "manufacturer_id"=>$manufacturer->manufacturer_id,
@@ -62,6 +62,7 @@ class Product extends Table{
             new ProductDescription($prd);
             if(!is_null($prd->category_id))new ProductCategory($prd);
             new ProductStore($prd);
+            new ProductLayout($prd);
             $this->checkImages($prd);
             $this->checkProperties($prd);
             foreach ($loadedRelated as $relprd) {
@@ -106,15 +107,18 @@ class Product extends Table{
             $http = new HTTP;
             $http->multiFetch($urls,function($calldata)use($tut){
                 if(mb_strlen($calldata["response"])>0){
+                    $product_id = $calldata["request"]["id"];
                     $pu = parse_url($calldata["url"]);
                     $pi = pathinfo($pu["path"]);
                     print_r($calldata);
-                    $filename = $tut->product_id."_".$calldata["request"]["i"]."_".$pi["basename"];
+                    $filename = $product_id."_".$calldata["request"]["i"]."_".$pi["basename"];
                     $filepath = $this->_cfg["images"]["path"];
                     $filepath.=$filename;
                     file_put_contents($filepath,$calldata["response"]);
-                    $image = new ProductImage(["image"=>$tut->_cfg["images"]["cms_path"].$filename,"product_id"=>$tut->product_id]);
-                    if($calldata["request"]["i"]==0)$tut->update(["image"=>$tut->_cfg["images"]["cms_path"].$filename]);
+                    // $image = new ProductImage(["image"=>$tut->_cfg["images"]["cms_path"].$filename,"product_id"=>$tut->product_id]);
+                    $image = new ProductImage(["image"=>$tut->_cfg["images"]["cms_path"].$filename,"product_id"=>$product_id]);
+                    if(empty($tut->image))$tut->update(["image"=>$tut->_cfg["images"]["cms_path"].$filename]);
+                    // if($calldata["request"]["i"]==0)$tut->update(["image"=>$tut->_cfg["images"]["cms_path"].$filename]);
                     Log::debug( "loaded image ".$calldata["url"]." to ".$filepath);
                 }
             });

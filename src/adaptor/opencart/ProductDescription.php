@@ -7,7 +7,7 @@ use core\HTTPConnector as HTTP;
 use core\Strings as Strings;
 use core\objects\Product as coreProduct;
 class ProductDescription extends Table{
-    protected $fillable = ['product_id',"language_id","name","description","meta_description","meta_keyword","tag"];
+    protected $fillable = ['product_id',"language_id","name","description","meta_title","meta_description","meta_keyword","tag"];
     protected $_cfg;
     public function __construct(coreProduct $prd = null){
         parent::__construct('product_description');
@@ -18,6 +18,7 @@ class ProductDescription extends Table{
                 "language_id"=>"1",
                 "name"=>$prd->title,
                 "description"=>htmlspecialchars(preg_replace("/\s*\r?\n\s*/m","",$prd->description)),
+                "meta_title"=>Strings::transcript($prd->title),
                 "meta_description"=>"",
                 "meta_keyword"=>"",
                 "tag"=>""

@@ -16,7 +16,7 @@ class ProductImage extends Table{
             $new_data=[
                 "product_id"=>$a["product_id"],
                 "image"=>$a["image"],
-                "sort_order"=>"0"
+                "sort_order"=>"1"
             ];
             try{
                 $this->find(['product_id'=>$a["product_id"],'image'=>$a["image"]]);

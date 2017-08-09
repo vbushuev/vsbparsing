@@ -9,17 +9,19 @@ class Ebay{
     protected $url = "http://stores.ebay.com";
     protected $html = false;
     protected $categories = false;
+    protected $watchedPages = [];
+    protected $watchedPagesFile = "";
+    protected $_parsed = 0;
     public function __construct($catalog="T-shirt-Hoarders"){
+        $this->watchedPagesFile = "store/pages-".date("Y-m-d").".json";
         $this->url.='/'.$catalog;
         $this->html = new Http();
-        if(file_exists("categories-".date("Y-m-d").".json")){
-            $this->categories = json_decode(file_get_contents("categories-".date("Y-m-d").".json"),true);
-        }
+        if(file_exists($this->watchedPagesFile))$this->watchedPages = json_decode(file_get_contents($this->watchedPagesFile),true);
     }
     public function __destructor(){
         $this->html->close();
     }
-    public function getCategories(callable $_callback=null){
+    public function getCategories(callable $_callback=null,$categories=[]){
         $this->categories = [];
         $this->html = new Http();
         $data = $this->html->fetch($this->url,"GET",[]);
@@ -27,74 +29,76 @@ class Ebay{
         $list = $doc["ul.lev1 > li > a"];
         $i=0;
         foreach ($list as $li) {
+
             $id = pq($li)->text();
+            if(!in_array($id,$categories))continue;
             $cat = new Category;
             // $this->categories[$id] = $cat->fromArray(['external_id' => $id,'title' => $id, 'url' => $this->url.pq($li)->attr("href")]);
             // $this->categories[$id] = ["viewed"=>0,"data"=>$cat->fromArray(['external_id' => $id,'title' => $id, 'url' => $this->url.pq($li)->attr("href")])];
             $this->categories[$id] = ["viewed"=>0,'external_id' => $id,'title' => $id, 'url' => $this->url.pq($li)->attr("href")];
         }
         $this->html->close();
-        Log::console($this->categories);
+        //Log::console($this->categories);
         \phpQuery::unloadDocuments();
-        file_put_contents("categories-".date("Y-m-d").".json",json_encode($this->categories,JSON_PRETTY_PRINT));
+        //file_put_contents("categories-".date("Y-m-d").".json",json_encode($this->categories,JSON_PRETTY_PRINT));
         return $this->categories;
     }
     public function getProducts(callable $_callback=null){
-        //$products = [];
-        Log::console("callback = ".(is_null($_callback)?"not func":"func"));
-        if($this->categories===false)$this->getCategories();
+        $this_url = $this->url;
+        if($this->categories===false)$this->getCategories(['Affliction']);
         $http= new Http();
-        $cat = new Category;
         foreach ($this->categories as $cat_id => $catArr) {
-            if($this->categories[$cat_id]["viewed"]=="0"){
-                $cat->fromArray($catArr);
-                $url = $cat->url;
-                $page = $http->fetch($url,"GET",[]);
+            $pageUrl = $catArr["url"];
+            $ipage = 0;
+            do{
+                Log::console("category ".$cat_id." page: ".(++$ipage));
+                $page = $http->fetch($pageUrl,"GET",[]);
                 $doc = \phpQuery::newDocument($page);
-                //echo "Getting {$url}\n";
                 $prods = $doc[".gallery[itemscope=itemscope] .details .ttl.g-std a"];
+                $multiProds = [];
                 foreach ($prods as $prod) {
-                    $prd = $this->productsFromPage($prod,$cat_id);
-                    //print_r($prd->toArray());exit;
+                    // $prd = $tut->productsFromPage($prod,$cat_id);
+                    // if(!is_null($_callback))$_callback($prd);
+                    $productPageUrl = pq($prod)->attr("href");
+                    if(!in_array($productPageUrl,$this->watchedPages))
+                        $multiProds[$productPageUrl] = ["cat_id"=>$cat_id,"_callback"=>$_callback,"url"=>$productPageUrl,"method"=>"GET","data"=>[]];
+                }
+                $tut = $this;
+                Log::console("Found ".count($multiProds)." new today products");
+                if(count($multiProds))$http->multiFetch($multiProds,function($resp)use($tut,$_callback){
+                    $prd = $tut->parseProductFromPage($resp["response"],$resp["request"]["cat_id"],$resp["url"]);
                     if(!is_null($_callback))$_callback($prd);
-                }
-                $pages = $doc[".pages a"];
-                foreach ($pages as $pageUrl) {
-                    if(pq($pageUrl)->attr("style")!="display:none"){
-                        $url = $this->url.pq($pageUrl)->attr("href");
-                        //echo pq($pageUrl)->attr("href")."  ".pq($pageUrl)->attr("style")."\n";
-                        $page = $http->fetch($url,"GET",[]);
-                        $doc = \phpQuery::newDocument($page);
-                        //echo "Getting {$url}\n";
-                        $prods = $doc[".gallery[itemscope=itemscope] .details .ttl.g-std a"];
-                        foreach ($prods as $prod) {
-                            $prd = $this->productsFromPage($prod,$cat_id);
-                            if(!is_null($_callback))$_callback($prd);
-                            //$products = array_merge($products,);
-                        }
-                    }
-                }
-                \phpQuery::unloadDocuments();
-                $this->categories[$cat_id]["viewed"] = "1";
-                file_put_contents("categories-".date("Y-m-d").".json",json_encode($this->categories,JSON_PRETTY_PRINT));
-                //break;
-            }
+                    else Log::console("callback is null");
+                    $tut->watchedPages[]=$resp["url"];
+                    $tut->storeWatchedPages();
+                    $tut->_parsed++;
+                });
+                $pageUrlDOM = $doc[".next a.enabled"];
+                $pageUrl = (count($pageUrlDOM))?$this->url.pq($pageUrlDOM)->attr("href"):false;
+            }while($pageUrl!==false);
+            \phpQuery::unloadDocuments();
         }
         $http->close();
-        return $products;
+        return;
     }
     protected function productsFromPage($prod,$cat_id){
         $http= new Http();
         $pp = pq($prod);
-        Log::console("Getting product [".$pp->attr("href")."]");
+        //Log::console("Getting product [".$pp->attr("href")."]");
         $productPage = $http->fetch($pp->attr("href"),"GET",[]);
+        $prd = $this->parseProductFromPage($productPage,$cat_id,$pp->attr("href"));
+        $http->close();
+        return $prd;
+    }
+    protected function parseProductFromPage($productPage,$cat_id,$ext_url){
         $pdoc = \phpQuery::newDocument($productPage);
         $sizes = $pdoc[".msku-sel option"];
         $params=[];
         foreach ($sizes as $size){
             $txt = pq($size)->text();
-            if(preg_match("/[2-5smlx]+/i",$txt))if(preg_match("/^([2-5smlx]+).*/i",$txt))$params["size"][]=$txt;
+            if(preg_match("/^[2-5smlx]+$/i",$txt))$params["size"][]=$txt;
         }
+
         $images = $pdoc["#vi_main_img_fs .img .tdThumb img"];
         $pictures = [];
         foreach ($images as $img) {
@@ -104,15 +108,20 @@ class Ebay{
         }
         $price = preg_replace("/\D*(\d+)(,|\.)(\d+)\D*/i","$1.$3",$pdoc["#prcIsum"]->text());
         $quantity = preg_replace("/\s*(\d+)[\s\S]*/im","$1",$pdoc["#qtySubTxt"]->text());
-        $title = preg_replace('/\$\d+[\.,]?\d*/m',"",$pp->text());
+        // $title = preg_replace('/\$\d+[\.,]?\d*/m',"",$pp->text());
+        $title = preg_replace('/\$\d+[\.,]?\d*/m',"",$pdoc["h1.it-ttl"]->text());
+        $title = preg_replace('/Details about /im','',$title);
+        $title = preg_replace('/подробные сведения о /iu','',$title);
+        $title = preg_replace('/\-?\s*без перевода\s*/iu','',$title);
+        $sku = $pdoc[".clnw-collect.clnw-c.clnw-str"]->attr("data-id"); //clnw-collect clnw-c clnw-str
         $prd = new Product;
         $prd->fromArray([
             //"id"=>,
-            "external_id"=>$pp->attr("id"),
-            "url"=>$pp->attr("href"),
+            "external_id"=>$sku,
+            "url"=>$ext_url,
             "title" => $title,
             //"brand"=>"",
-            "sku"=>$pp->attr("id"),
+            "sku"=>$sku,
             //"vendor"=>strval($offer->vendor),
             //"description" =>$description,
             "category_id" => $cat_id,
@@ -122,9 +131,14 @@ class Ebay{
             "params"=>$params,
             "quantity"=>$quantity
         ]);
-        $http->close();
+        //Log::console("Parsed product: ", $prd->toArray());exit;
         return $prd;
     }
-
+    protected function storeWatchedPages(){
+        file_put_contents($this->watchedPagesFile,json_encode($this->watchedPages));
+    }
+    public function getParsedCount(){
+        return $this->_parsed;
+    }
 };
 ?>

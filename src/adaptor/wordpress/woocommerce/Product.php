@@ -10,11 +10,13 @@ class Product extends Table{
     protected $fillable = ["ID","post_author","post_date","post_date_gmt","post_content","post_title","post_excerpt","post_status","comment_status","ping_status","post_password","post_name","to_ping","pinged","post_modified","post_modified_gmt","post_content_filtered","post_parent","guid","menu_order","post_type","post_mime_type","comment_count"];
     protected $_cfg;
     protected $imageIds=[];
+    protected $_parsed = 0;
     public function __construct(coreProduct $prd = null){
         parent::__construct('posts','ID','post_date',"post_modified");
         $this->_cfg = Config::woocommerce();
         if($prd!=null){
             $post_name = Strings::transcript($prd->title);
+            $productTag = preg_match("/womens|женск/imu",$prd->title)?"Женщины":"Мужчины";
             $new_data=[
                 "post_author"=>"1",
                 "post_content"=>$prd->description,
@@ -59,9 +61,9 @@ class Product extends Table{
             $this->checkProperties($prd);
             new TermRelationship([
                 "id"=>$this->ID,
-                "taxonomy"=>"product_type",
-                "name"=>"variable",
-                "value"=>"variable"
+                "taxonomy"=>"product_tag",
+                "name"=>"tag",
+                "value"=>$productTag
             ]);
         }
     }
@@ -103,16 +105,34 @@ class Product extends Table{
         $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_product_attributes","meta_value"=>'a:1:{s:7:"pa_size";a:6:{s:4:"name";s:7:"pa_size";s:5:"value";s:0:"";s:8:"position";i:0;s:10:"is_visible";i:1;s:12:"is_variation";i:1;s:11:"is_taxonomy";i:1;}}']);
         $order = 0;
         //delete old variation
-        $vars1 = new Table('posts');
-        print_r(['post_parent'=>$this->ID,'post_type'=>'product_variation']);
-        $pvs = $vars1->get(['post_parent'=>$this->ID,'post_type'=>'product_variation']);
-        $posts_variations = [];
-        foreach($pvs as $pv)$posts_variations[]=$pv->id;
-        $vars2 = new Table('term_relationships');
-        $vars2->delete(["object_id"=>"in (".join($posts_variations,',').")"]);
-        $vars1->delete(['post_parent'=>$this->ID,'post_type'=>'product_variation']);
-        foreach($prd->params["size"] as $size){
-            new ProductVariation($prd,["size"=>$size,"order"=>$order++,"guid"=>$this->publicData["guid"],"parent_id"=>$this->ID]);
+
+        if(isset($prd->params["size"]) && count($prd->params["size"])){
+            try{
+                $vars1 = new Table('posts');
+                $pvs = $vars1->get(['post_parent'=>$this->ID,'post_type'=>'product_variation']);
+                $posts_variations = [];
+                foreach($pvs as $pv)$posts_variations[]=$pv["ID"];
+                $vars2 = new Table('term_relationships');
+                $vars2->delete(["object_id"=>"in (".join($posts_variations,',').")"]);
+                $vars1->delete(['post_parent'=>$this->ID,'post_type'=>'product_variation']);
+            }
+            catch(\Exception $e){
+                Log::debug($e->getMessage());
+            }
+            new TermRelationship([
+                "id"=>$this->ID,
+                "taxonomy"=>"product_type",
+                "name"=>"variable",
+                "value"=>"variable"
+            ]);
+            foreach($prd->params["size"] as $size)new ProductVariation($prd,["size"=>$size,"order"=>$order++,"guid"=>$this->publicData["guid"],"parent_id"=>$this->ID]);
+        }else {
+            new TermRelationship([
+                "id"=>$this->ID,
+                "taxonomy"=>"product_type",
+                "name"=>"simple",
+                "value"=>"simple"
+            ]);
         }
     }
     public function checkImages(coreProduct $prd){

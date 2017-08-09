@@ -5,6 +5,7 @@ class Auth {
     protected $session= null;
     protected $client = null;
     protected $apikey = null;
+    protected $account = null;
     protected $resp=[
         "code"=>200,
         "status"=>"success",
@@ -15,6 +16,7 @@ class Auth {
     public function getClient(){return $this->client;}
     public function getSession(){return $this->session;}
     public function getApikey(){return $this->apikey;}
+    public function getAccount(){return $this->account;}
     public function __construct($a=null){
         if(!is_null($a) && is_array($a)){
             if(isset($a["session"])){
@@ -23,9 +25,11 @@ class Auth {
                     $this->client = new Client;
                     $this->client->find(["id"=>$this->session->client_id]);
                     $this->apikey = new Apikey;
+                    $this->account = new Account;
+                    $this->account->find($this->client->account_id);
                     Log::debug($this->session->apikey_id,$this->client->account_id);
                     $this->apikey->find(["id"=>$this->session->apikey_id,"account_id"=>$this->client->account_id]);
-                    if($this->apikey->quantity<=0){
+                    if($this->account->quantity<=0){
                         $message = "not enough requests";
                         Log::debug( $message );
                         $this->resp = [
@@ -70,7 +74,7 @@ class Auth {
                     }
                     $this->apikey = new Apikey;
                     try{
-                        $this->apikey->find(["apikey"=>$a["apikey"],"account_id"=>$this->client->account_id]);
+                        $this->apikey->find(["apikey"=>$a["apikey"],"id"=>$this->client->apikey_id]);
                         try{
                             $this->session = new Session(["apikey_id"=>$this->apikey->id,"client_id"=>$this->client->id]);
                             $this->resp["response"]= $this->session->toArray();
@@ -111,6 +115,7 @@ class Auth {
                     ];
                 }
             }
+
         }
     }
     public function getResp(){

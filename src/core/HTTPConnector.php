@@ -10,7 +10,8 @@ class HTTPConnector extends Common{
     protected $config = [
         "method" => "GET",
         "proxy" => false,
-        "json"=>false
+        "json"=>false,
+        "tor"=>false
     ];
     protected $curl = false;
     protected $responseHTTPCode = 200;
@@ -23,7 +24,7 @@ class HTTPConnector extends Common{
         $this->curl = curl_init();
         $this->closed = false;
     }
-    public function fetch($url,$m="GET",$d=[]){
+    public function fetch($url,$m="GET",$d=[],$repeat=0){
         if($this->closed)$this->curl = curl_init();
         $host = parse_url($url);
         $curlOptions = [
@@ -38,28 +39,15 @@ class HTTPConnector extends Common{
             CURLOPT_HEADER => true,
             CURLINFO_HEADER_OUT => true,
             CURLOPT_COOKIEJAR => 'cookie-jar',
-            CURLOPT_COOKIEFILE => 'logs/cookie.txt'
+            CURLOPT_COOKIEFILE => 'logs/cookie.txt',
+            CURLOPT_CONNECTTIMEOUT => 0,
+            CURLOPT_TIMEOUT => 0 //timeout in seconds
             //CURLOPT_VERBOSE => true,
             //CURLOPT_STDERR => fopen("curl.log",'w+')
         ];
         //$method = $_SERVER['REQUEST_METHOD'];
         if($this->config["proxy"]!==false){
-            if(is_array($this->config["proxy"])){
-                $itr = isset($this->config["proxy_itr"])?$this->config["proxy_itr"]:0;
-                if(count($this->config["proxy"])<=$itr)$itr = 0;
-                $proxy = $this->config["proxy"][$itr]["url"];
-                $curlOptions[CURLOPT_PROXY] = $this->config["proxy"][$itr]["url"];
-                // $type = CURLOPT_PROXY_HTTP;
-                switch($this->config["proxy"][$itr]["type"]){
-                    case "socks4":$curlOptions[CURLOPT_PROXYTYPE] = CURLOPT_PROXY_SOCKS4;break;
-                    case "socks5":$curlOptions[CURLOPT_PROXYTYPE] = CURLOPT_PROXY_SOCKS5;break;
-                }
-                //$curlOptions[CURLOPT_PROXYTYPE] = $type;
-                ++$itr;
-                $this->config["proxy_itr"]=$itr;
-            }
-            //elseif(is_string($this->config["proxy"]))$proxy = $this->config["proxy"];
-
+            $curlOptions[CURLOPT_PROXY] = $this->getProxy();
         }
 
         if($m == 'POST'){
@@ -80,7 +68,8 @@ class HTTPConnector extends Common{
         //Log::debug("HTTP/{$m} {$url}","Headers",$rheads,"Data",$d,"Response",$s);
         $this->responseHeaders(substr($s,0,$info["header_size"]));
         $response = substr($s,$info["header_size"]);
-        $this->responseHTTPCode= intval($info["http_code"]);
+        $this->responseHTTPCode = intval($info["http_code"]);
+        //if($this->responseHTTPCode!=200 && $repeat<3)$response = $this->fetch($url,$m,$d,$repeat++);
         return $response;
     }
     public function fetchMulti($urls,$m="GET",$d=""){
@@ -173,7 +162,7 @@ class HTTPConnector extends Common{
             curl_multi_exec($mh, $running);
             curl_multi_select($mh);
         } while ($running > 0);
-        Log::debug("curl_multi_info: ",curl_multi_info_read($mh));
+        //Log::debug("curl_multi_info: ",curl_multi_info_read($mh));
         // Obtendo dados de todas as consultas e retirando da fila
         foreach($curls as $url=>$curl){
             $calldata = [
@@ -182,7 +171,7 @@ class HTTPConnector extends Common{
                 "response" => curl_multi_getcontent($curl),
                 "http_info" => curl_getinfo($curl)
             ];
-            Log::debug($calldata);
+            //Log::debug($calldata);
             $f($calldata);
             //$this->_properties["http_info"][$url] = ;
             curl_multi_remove_handle($mh, $curl);
@@ -202,6 +191,41 @@ class HTTPConnector extends Common{
                 $this->headers[$ms[1][$i]] = $ms[2][$i];
             }
         }
+    }
+    protected function getProxy(){
+        if($this->config["tor"]){
+            $tc = new \Dapphp\TorUtils\ControlClient();
+            try {
+                $tc->connect("127.0.0.1","9001"); // connect to 127.0.0.1:9051
+                //$tc->authenticate('password');   // authenticate using hashedcontrolpassword "password"
+                $tc->signal(\Dapphp\TorUtils\ControlClient::SIGNAL_NEWNYM);
+                Log::Debug("Signal sent - IP changed successfully!");
+            } catch (\Dapphp\TorUtils\ProtocolError $ex) {
+                Log::debug( "Signal failed: ".$ex->getStatusCode());
+            }
+            catch (\Exception $ex) {
+                Log::debug( "Signal failed: ".$ex->getMessage()."\ntrace:\n" . $ex->getTraceAsString());
+            }
+        }
+        if(is_array($this->config["proxy"])){
+            $itr = isset($this->config["proxy_itr"])?$this->config["proxy_itr"]:rand(0,count($this->config["proxy_itr"]));
+            if(count($this->config["proxy"])<=$itr)$itr = 0;
+            $proxy = $this->config["proxy"][$itr]["url"];
+
+            // $type = CURLOPT_PROXY_HTTP;
+            switch($this->config["proxy"][$itr]["type"]){
+                case "socks4":$curlOptions[CURLOPT_PROXYTYPE] = CURLOPT_PROXY_SOCKS4;break;
+                case "socks5":$curlOptions[CURLOPT_PROXYTYPE] = CURLOPT_PROXY_SOCKS5;break;
+            }
+            //$curlOptions[CURLOPT_PROXYTYPE] = $type;
+            Log::debug("using proxy: ".$this->config["proxy"][$itr]["url"]);
+            ++$itr;
+            $this->config["proxy_itr"]=$itr;
+
+
+            return $this->config["proxy"][$itr]["url"];
+        }
+        //elseif(is_string($this->config["proxy"]))$proxy = $this->config["proxy"];
     }
     public function close(){
         curl_close($this->curl);

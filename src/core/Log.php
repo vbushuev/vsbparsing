@@ -4,6 +4,7 @@ class Log{
     protected static $LogDir = "logs";
     protected static $LogName = "g";
     public static $console = false;
+    public static $off = false;
     public static function error(){
         $out = "ERROR\t".self::get_caller_info();
         foreach(func_get_args() as $s){
@@ -45,7 +46,7 @@ class Log{
     }
     protected static function _putdata($s){
         if(self::$console)print($s);
-        \file_put_contents(self::$LogDir."/".self::$LogName."-".date("Y-m-d").'.log',$s,FILE_APPEND);
+        if(!self::$off)\file_put_contents(self::$LogDir."/".self::$LogName."-".date("Y-m-d").'.log',$s,FILE_APPEND);
     }
     protected static function get_caller_info() {
         $c = '';
@@ -78,7 +79,7 @@ class Log{
             $file = $trace[1]['file'];
             $line = $trace[1]['line'];
         }
-        if($class!='')self::$LogName = preg_replace("/\\\/im",".",$class);
+        // if($class!='')self::$LogName = preg_replace("/\\\/im",".",$class);
         if ($file != '') $file = basename($file);
         $c = date("H:i:s")." File:".$file ;
         $c .= " Line:".$line;

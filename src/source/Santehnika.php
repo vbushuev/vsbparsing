@@ -43,7 +43,7 @@ class Santehnika{
         $lastcat = (file_exists("tdlcp".date("YmdH")."json"))?json_decode(file_get_contents("tdlcp".date("YmdH")."json")):null;
         $products = [];
         if($this->categories===false)return $products;
-        $http= new Http();
+        $http= new Http(["tor"=>true]);
         foreach ($this->categories as $cat_id => $cat) {
             if(!is_null($lastcat) && $cat_id!=$lastcat)continue;
             $lastcat = $cat;
@@ -75,8 +75,9 @@ class Santehnika{
                     if(!is_null($_callback) && !is_null($prd) )$_callback($prd);
                     //break;
                 }
+                \phpQuery::unloadDocuments();
             }
-            \phpQuery::unloadDocuments();
+            // \phpQuery::unloadDocuments();
             $http->close();
             file_put_contents("tdlcp".date("YmdH")."json",json_encode($cat_it));
         }

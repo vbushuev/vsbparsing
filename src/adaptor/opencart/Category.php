@@ -13,28 +13,33 @@ class Category extends Table{
         parent::__construct('category','category_id',"date_added","date_modified");
         $this->_cfg = Config::opencart();
         if($a!=null){
-            $parent=null;
-            if(!is_null($a->parent_id)){
-                $parent = new Category($a->parent_id);
-            }
+            $cd = new CategoryDescription;
             $new_data=[
                 "image"=>"",
-                "parent_id"=>is_null($parent)?"0":$parent->category_id,
+                "parent_id"=>($a->parent_id===false)?"0":$a->parent_id,
                 "top"=>"0",
                 "column"=>"0",
                 "sort_order"=>"0",
                 "status"=>"1"
             ];
             try{
-                $cd = new CategoryDescription;
-                $cd->find(['name'=>$a->title]);
-                $this->find(['category_id'=>$cd->category_id]);
+                $cd->find(["name"=>$a->title]);
+                $new_data["category_id"] = $cd->category_id;
+                $this->find(["category_id"=>$cd->category_id,"parent_id"=>(($a->parent_id===false)?"0":$a->parent_id)]);
+                $this->category_id = $cd->category_id;
+                $this->publicData =$new_data;
+                // $this->save();
             }
             catch(\Exception $e){
                 $this->create($new_data);
-                $a->id = $this->category_id;
-                $cd = new CategoryDescription($a);
             }
+
+            $a->id = $this->category_id;
+            new CategoryDescription($a);
+            new CategoryPath($a);
+            new CategoryLayout($a);
+            new CategoryStore($a);
+            // print_r($this->toArray());exit;
         }
     }
 };

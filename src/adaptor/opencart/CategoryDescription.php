@@ -2,9 +2,10 @@
 namespace adaptor\opencart;
 use core\Log as Log;
 use db\Table as Table;
+use core\Strings as Strings;
 use core\objects\Category as coreCategory;
 class CategoryDescription extends Table{
-    protected $fillable = ["category_id","language_id","name","description","meta_description","meta_keyword"];
+    protected $fillable = ["category_id","language_id","name","description","meta_title","meta_description","meta_keyword"];
     protected $_cfg;
     public function __construct( coreCategory $a = null){
         parent::__construct('category_description');
@@ -14,8 +15,10 @@ class CategoryDescription extends Table{
                 "language_id"=>"1",
                 "name"=>$a->title,
                 "description"=>$a->description,
+                "meta_title"=>Strings::transcript($a->title),
                 "meta_description"=>"",
                 "meta_keyword"=>""
+
             ];
             try{
                 $this->find(['name'=>$a->title]);
