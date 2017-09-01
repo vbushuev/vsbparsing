@@ -10,16 +10,18 @@ class CategoryPath extends Table{
     public function __construct( coreCategory $a = null){
         parent::__construct('category_path');
         if($a!=null){
-            $level = "0";
+            $level = 0;
             if($a->parent_id!==false){
-                $new_data=[
-                    "category_id"=>$a->id,
-                    "path_id"=>$a->parent_id,
-                    "level"=>$level,
-                ];
-                try{$this->find(['category_id'=>$a->id,'path_id'=>$a->parent_id]);}
-                catch(\Exception $e){$this->create($new_data);}
-                $level="1";
+                foreach($a->parent_id as $pid){
+                    $new_data=[
+                        "category_id"=>$a->id,
+                        "path_id"=>$pid,
+                        "level"=>$level,
+                    ];
+                    try{$this->find(['category_id'=>$a->id,'path_id'=>$pid]);}
+                    catch(\Exception $e){$this->create($new_data);}
+                    $level++;
+                }
             }
             $new_data=[
                 "category_id"=>$a->id,

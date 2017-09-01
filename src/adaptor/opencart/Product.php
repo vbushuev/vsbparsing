@@ -27,7 +27,7 @@ class Product extends Table{
                 "isbn"=>"",
                 "mpn"=>"",
                 "location"=>"",
-                "quantity"=>"100",
+                "quantity"=>$prd->quantity,
                 "stock_status_id"=>"7",
                 "image"=>"",
                 "manufacturer_id"=>$manufacturer->manufacturer_id,

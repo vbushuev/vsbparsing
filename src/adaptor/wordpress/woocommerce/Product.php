@@ -91,15 +91,14 @@ class Product extends Table{
         $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_upsell_ids","meta_value"=>"a:0:{}"]);
         $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_crosssell_ids","meta_value"=>"a:0:{}"]);
         $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_purchase_note","meta_value"=>""]);
-        $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_default_attributes","meta_value"=>"a:0:{}"]);
         $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_virtual","meta_value"=>"no"]);
         $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_downloadable","meta_value"=>"no"]);
         $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_product_image_gallery","meta_value"=>join($this->imageIds,",")]);
         $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_download_limit","meta_value"=>"-1"]);
         $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_download_expiry","meta_value"=>"-1"]);
-        $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_stock","meta_value"=>"NULL"]);
+        // $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_stock","meta_value"=>"NULL"]);
         $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_stock_status","meta_value"=>"instock"]);
-        $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_product_version","meta_value"=>"3.0.7"]);
+        $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_product_version","meta_value"=>"3.1.2"]);
         $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_price","meta_value"=>$prd->price]);
         $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_thumbnail_id","meta_value"=>$this->imageIds[0]]);
         $pm = new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_product_attributes","meta_value"=>'a:1:{s:7:"pa_size";a:6:{s:4:"name";s:7:"pa_size";s:5:"value";s:0:"";s:8:"position";i:0;s:10:"is_visible";i:1;s:12:"is_variation";i:1;s:11:"is_taxonomy";i:1;}}']);
@@ -125,7 +124,13 @@ class Product extends Table{
                 "name"=>"variable",
                 "value"=>"variable"
             ]);
-            foreach($prd->params["size"] as $size)new ProductVariation($prd,["size"=>$size,"order"=>$order++,"guid"=>$this->publicData["guid"],"parent_id"=>$this->ID]);
+            $first = true;
+            foreach($prd->params["size"] as $size){
+                new ProductVariation($prd,["size"=>$size,"order"=>$order++,"guid"=>$this->publicData["guid"],"parent_id"=>$this->ID]);
+                if($first){
+                    new ProductMeta(["post_id"=>$this->ID,"meta_key"=>"_default_attributes","meta_value"=>'a:1:{s:7:"pa_size";s:'.strlen($size).':"'.$size.'";}']);
+                }
+            }
         }else {
             new TermRelationship([
                 "id"=>$this->ID,

@@ -14,8 +14,8 @@ class Common{
     public function toArray(){
         return $this->publicData;
     }
-    // public function toJSON($p=JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE){
-    public function toJSON($p=JSON_UNESCAPED_UNICODE){
+    public function toJSON($p=JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE){
+    // public function toJSON($p=JSON_UNESCAPED_UNICODE){
         return json_encode($this->publicData,$p);
     }
     public function fromArray($a){

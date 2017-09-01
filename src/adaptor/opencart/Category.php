@@ -16,7 +16,7 @@ class Category extends Table{
             $cd = new CategoryDescription;
             $new_data=[
                 "image"=>"",
-                "parent_id"=>($a->parent_id===false)?"0":$a->parent_id,
+                "parent_id"=>($a->parent_id===false)?"0":$a->parent_id[0],
                 "top"=>"0",
                 "column"=>"0",
                 "sort_order"=>"0",
@@ -25,7 +25,7 @@ class Category extends Table{
             try{
                 $cd->find(["name"=>$a->title]);
                 $new_data["category_id"] = $cd->category_id;
-                $this->find(["category_id"=>$cd->category_id,"parent_id"=>(($a->parent_id===false)?"0":$a->parent_id)]);
+                $this->find(["category_id"=>$cd->category_id,"parent_id"=>(($a->parent_id===false)?"0":$a->parent_id[0])]);
                 $this->category_id = $cd->category_id;
                 $this->publicData =$new_data;
                 // $this->save();
@@ -36,7 +36,7 @@ class Category extends Table{
 
             $a->id = $this->category_id;
             new CategoryDescription($a);
-            new CategoryPath($a);
+            if($a->url!==false)new CategoryPath($a);
             new CategoryLayout($a);
             new CategoryStore($a);
             // print_r($this->toArray());exit;

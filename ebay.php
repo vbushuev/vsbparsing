@@ -15,6 +15,7 @@ $ebay = new Ebay("T-shirt-Hoarders");
 $products = $ebay->getProducts(function($prd){
     $product = new Product($prd);
 });
+$ebay->push();
 echo "\n---- parsed ".$ebay->getParsedCount()." ---- \n";
 echo "\n---- script done in ".(time()-$tick)." ---- \n";
 // iLU3V7s4Snyek2M4
@@ -26,6 +27,7 @@ https://5.45.126.47:8888/#/login
 
 
 wp:admin:DaNKy^kKApKJ$cD(Hs
+admin:wAyIpvoe&FrH4SiQbjC!L&L7
 
 */
 

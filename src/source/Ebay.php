@@ -4,6 +4,7 @@ use core\objects\Category as Category;
 use core\objects\Product as Product;
 use core\Log as Log;
 use core\HTTPConnector as Http;
+use db\Connector as DB;
 
 class Ebay{
     protected $url = "http://stores.ebay.com";
@@ -12,10 +13,15 @@ class Ebay{
     protected $watchedPages = [];
     protected $watchedPagesFile = "";
     protected $_parsed = 0;
-    public function __construct($catalog="T-shirt-Hoarders"){
+    protected $_categories = [];
+    public function __construct($catalog="T-shirt-Hoarders",$cc = [
+        "Affliction","American Baller","American Fighter by Affliction","Archaic by Affliction","Diesel","Hurley",
+        "Metal Mulisha","Rebel Saints by Affliction","Rock Revival","Sinful by Affliction","Venum","Xtreme Couture by Affliction"
+        ]){
         $this->watchedPagesFile = "store/pages-".date("Y-m-d").".json";
         $this->url.='/'.$catalog;
         $this->html = new Http();
+        $this->_categories = $cc;
         if(file_exists($this->watchedPagesFile))$this->watchedPages = json_decode(file_get_contents($this->watchedPagesFile),true);
     }
     public function __destructor(){
@@ -31,6 +37,7 @@ class Ebay{
         foreach ($list as $li) {
 
             $id = pq($li)->text();
+            echo $id. " in [".join($categories,' ')."]\n";
             if(!in_array($id,$categories))continue;
             $cat = new Category;
             // $this->categories[$id] = $cat->fromArray(['external_id' => $id,'title' => $id, 'url' => $this->url.pq($li)->attr("href")]);
@@ -45,7 +52,7 @@ class Ebay{
     }
     public function getProducts(callable $_callback=null){
         $this_url = $this->url;
-        if($this->categories===false)$this->getCategories(['Affliction']);
+        if($this->categories===false)$this->getCategories(function(){},$this->_categories);
         $http= new Http();
         foreach ($this->categories as $cat_id => $catArr) {
             $pageUrl = $catArr["url"];
@@ -139,6 +146,19 @@ class Ebay{
     }
     public function getParsedCount(){
         return $this->_parsed;
+    }
+    public function push(){
+        $db = new DB;
+        $db->delete("delete from wp_options where option_name like '_transient_wc_var_prices_%'");
+        $db->delete("delete from wp_options where option_name like '_transient_timeout_wc_product_children_%'");
+        $db->delete("delete from wp_options where option_name like '_transient_wc_product_children_%'");
+        $db->delete("delete from wp_options where option_name like '_transient_timeout_wc_var_prices_%'");
+        $db->delete("delete from wp_options where option_name like '_transient_timeout_wc_child_has_weight_%'");
+        $db->delete("delete from wp_options where option_name like '_transient_wc_child_has_weight_%'");
+        $db->delete("delete from wp_options where option_name like '_transient_timeout_wc_child_has_dimensions_%'");
+        $db->delete("delete from wp_options where option_name like '_transient_wc_child_has_dimensions_%'");
+        $db->delete("delete from wp_options where option_name like '_transient_timeout_wc_related_%'");
+        $db->delete("delete from wp_options where option_name like '_transient_wc_related_%'");
     }
 };
 ?>
