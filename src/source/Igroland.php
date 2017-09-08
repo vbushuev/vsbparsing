@@ -4,6 +4,7 @@ use core\objects\Category as Category;
 use core\objects\Product as Product;
 use core\Log as Log;
 use core\HTTPConnector as Http;
+use core\Strings;
 
 class Igroland{
 
@@ -16,22 +17,78 @@ class Igroland{
     public function getCategories($cats=[],callable $_callback=null){
         $this->categories = [];
         foreach ($cats as $li) {
-            $id = $li["category"];
+            $category = new Category;
+            $parent_id = false;
+            $id = Strings::transcript($li["category"]);
             $cat = isset($this->categories[$id])?$this->categories[$id]:[
-                'external_id' => $li["category"],
+                'id' => $id,
+                'external_id' => $id,
                 'title' => $li["category"],
-                'url' => '',
+                'parent_id'=>$parent_id,
+                'url' => false,
                 'brands'=>[],
                 'goods'=>[]
             ];
+            if($li["category1"]!="0"){
+                $cat['goods'] = false;
+                $category->fromArray($cat);
+                $icat = (!is_null($_callback))?$_callback($category):null;
+                $cat["internalCategory"] = $icat;
+                $this->categories[$id] = $cat;
+                $parent_id = [$icat->category_id];
+                $id = Strings::transcript($li["category1"]);
+                $cat =isset($this->categories[$id])?$this->categories[$id]:[
+                    'id' => $id,
+                    'external_id' => $id,
+                    'title' => $li["category1"],
+                    'parent_id'=>array_reverse($parent_id),
+                    'url' => false,
+                    'brands'=>[],
+                    'goods'=>[]
+                ];
 
-            $category = new Category;
-            $category->fromArray($cat);
-
-            $icat = (!is_null($_callback))?$_callback($category):null;
-
-            $cat["internalCategory"] = $icat;
+            }
+            if($li["category2"]!="0"){
+                $cat['goods'] = false;
+                $category->fromArray($cat);
+                $icat = (!is_null($_callback))?$_callback($category):null;
+                $cat["internalCategory"] = $icat;
+                $this->categories[$id] = $cat;
+                $parent_id[] = $icat->category_id;
+                $id = Strings::transcript($li["category2"]);
+                $cat =isset($this->categories[$id])?$this->categories[$id]:[
+                    'id' => $id,
+                    'external_id' => $id,
+                    'title' => $li["category1"],
+                    'parent_id'=>array_reverse($parent_id),
+                    'url' => false,
+                    'brands'=>[],
+                    'goods'=>[]
+                ];
+            }
+            if($li["category3"]!="0"){
+                $cat['goods'] = false;
+                $category->fromArray($cat);
+                $icat = (!is_null($_callback))?$_callback($category):null;
+                $cat["internalCategory"] = $icat;
+                $this->categories[$id] = $cat;
+                $parent_id[] = $icat->category_id;
+                $id = Strings::transcript($li["category3"]);
+                $cat =isset($this->categories[$id])?$this->categories[$id]:[
+                    'id' => $id,
+                    'external_id' => $id,
+                    'title' => $li["category3"],
+                    'parent_id'=>array_reverse($parent_id),
+                    'url' => false,
+                    'brands'=>[],
+                    'goods'=>[]
+                ];
+            }
             $cat["goods"][]=$li;
+            $cat["url"][]=$cat["goods"];
+            $category->fromArray($cat);
+            $icat = (!is_null($_callback))?$_callback($category):null;
+            $cat["internalCategory"] = $icat;
             $this->categories[$id] = $cat;
         }
         return $this->categories;
@@ -40,6 +97,7 @@ class Igroland{
         if($this->categories===false)return $products;
         foreach ($this->categories as $cat_id => $cat) {
             $category_id = $cat["internalCategory"];
+            if($cat["goods"]==false)continue;
             foreach($cat["goods"] as $good){
                 $prd = new Product;
                 $prd->fromArray([

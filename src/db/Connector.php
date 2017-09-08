@@ -17,6 +17,7 @@ class Connector{
     }
     public function disconnect(){
         if($this->connected){
+            // echo "DB[#] disconnected\n";
              $this->conn->close();
              $this->connected = false;
          }
@@ -25,6 +26,7 @@ class Connector{
         $this->conn = new \mysqli($this->_cfg["host"],$this->_cfg["user"],$this->_cfg["pass"],$this->_cfg["schema"]);
         //GARAN24::debug($this->_dbdata);
         if($this->conn->connect_errno) throw new Exception("No db connection. Error:".$this->conn->connect_error);
+        // else echo "DB[#] connected\n";
         $this->connected = true;
         $this->conn->set_charset('utf8');
     }

@@ -40,7 +40,7 @@ class CSVReader extends Common{
                 for($i=0;$i<count($data);++$i){
                     $val = $data[$i];
                     if($this->_cfg["encoding"]!="utf8")$val = iconv($this->_cfg["encoding"],"utf8",$val);
-                    $row[$keys[$i]]=$val;
+                    if(isset($keys[$i]))$row[$keys[$i]]=$val;
                 }
                 $res[]=$row;
             }

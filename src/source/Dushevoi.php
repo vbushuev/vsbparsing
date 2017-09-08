@@ -29,13 +29,14 @@ class Dushevoi{
             $id = Strings::transcript($li["id"]);
             $li["id"] = $id;
             $parent_id = isset($li["parent_id"])?Strings::transcript($li["parent_id"]):-1;
+            $parent = false;
             if($parent_id!=-1){
                 $p1_id = $this->internal_categories[$parent_id];
                 $parent = [$p1_id->category_id];
                 // if(isset($this->internal_categoriesById[$p1_id->parent_id]))$parent[] = $p1_id->parent_id;
                 if(intval($p1_id->parent_id)!==0)$parent[] = $p1_id->parent_id;
                 $parent=array_reverse($parent);
-            }else $parent = false;
+            }
 
 
             $cat = new Category;

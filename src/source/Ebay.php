@@ -149,16 +149,17 @@ class Ebay{
     }
     public function push(){
         $db = new DB;
-        $db->delete("delete from wp_options where option_name like '_transient_wc_var_prices_%'");
-        $db->delete("delete from wp_options where option_name like '_transient_timeout_wc_product_children_%'");
-        $db->delete("delete from wp_options where option_name like '_transient_wc_product_children_%'");
-        $db->delete("delete from wp_options where option_name like '_transient_timeout_wc_var_prices_%'");
-        $db->delete("delete from wp_options where option_name like '_transient_timeout_wc_child_has_weight_%'");
-        $db->delete("delete from wp_options where option_name like '_transient_wc_child_has_weight_%'");
-        $db->delete("delete from wp_options where option_name like '_transient_timeout_wc_child_has_dimensions_%'");
-        $db->delete("delete from wp_options where option_name like '_transient_wc_child_has_dimensions_%'");
-        $db->delete("delete from wp_options where option_name like '_transient_timeout_wc_related_%'");
-        $db->delete("delete from wp_options where option_name like '_transient_wc_related_%'");
+        $db->delete("delete from options where option_name like '_transient_wc_var_prices_%'");
+        $db->delete("delete from options where option_name like '_transient_timeout_wc_product_children_%'");
+        $db->delete("delete from options where option_name like '_transient_wc_product_children_%'");
+        $db->delete("delete from options where option_name like '_transient_timeout_wc_var_prices_%'");
+        $db->delete("delete from options where option_name like '_transient_timeout_wc_child_has_weight_%'");
+        $db->delete("delete from options where option_name like '_transient_wc_child_has_weight_%'");
+        $db->delete("delete from options where option_name like '_transient_timeout_wc_child_has_dimensions_%'");
+        $db->delete("delete from options where option_name like '_transient_wc_child_has_dimensions_%'");
+        $db->delete("delete from options where option_name like '_transient_timeout_wc_related_%'");
+        $db->delete("delete from options where option_name like '_transient_wc_related_%'");
+        $db->disconnect();
     }
 };
 ?>

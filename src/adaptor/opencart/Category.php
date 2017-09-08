@@ -36,7 +36,7 @@ class Category extends Table{
 
             $a->id = $this->category_id;
             new CategoryDescription($a);
-            if($a->url!==false)new CategoryPath($a);
+            if($a->url!==false) new CategoryPath($a);
             new CategoryLayout($a);
             new CategoryStore($a);
             // print_r($this->toArray());exit;
